@@ -1,0 +1,48 @@
+===== PREMIUM CUSTOM CURSOR =====
+
+/* Only show custom cursor on desktop */
+@media (min-width: 768px) {
+
+    /* Keep system cursor visible alongside the custom cursor */
+    /* Removed cursor: none properties */
+
+    /* Core cursor styles */
+    .custom-cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 2px;
+        height: 2px;
+        background-color: var(--accent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99999;
+        transform: translate(-50%, -50%);
+        box-shadow: var(--accent-glow);
+    }
+
+    .custom-cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 10px;
+        height: 10px;
+        border: 2px solid rgba(var(--accent-rgb), 0.4);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99998;
+        transform: translate(-50%, -50%);
+        background-color: rgba(var(--accent-rgb), 0.05);
+        backdrop-filter: blur(0px);
+    }
+
+    /* Text input state */
+    .custom-cursor-ring.text-mode {
+        width: 4px;
+        height: 24px;
+        border-radius: 2px;
+        background-color: var(--accent);
+        border: none;
+        backdrop-filter: blur(0px);
+    }
+}

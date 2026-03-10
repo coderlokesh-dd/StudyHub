@@ -1,0 +1,119 @@
+/* ===== NOTES PAGE — PREMIUM ===== */
+.notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+}
+
+.notes-header h1 {
+    font-size: var(--text-2xl);
+    letter-spacing: -0.03em;
+}
+
+.notes-toolbar {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-wrap .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.search-wrap input {
+    width: 100%;
+    padding-left: 40px;
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    backdrop-filter: blur(8px);
+}
+
+.search-wrap input:focus {
+    background: var(--bg-card-hover);
+}
+
+.filter-select {
+    min-width: 150px;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+}
+
+.note-card {
+    padding: var(--space-lg) !important;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    cursor: default;
+    border-color: var(--border-subtle) !important;
+}
+
+.note-card:hover {
+    border-color: var(--border-color) !important;
+    box-shadow: var(--shadow-md);
+}
+
+.note-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.note-card-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.note-card:hover .note-card-actions {
+    opacity: 1;
+}
+
+.note-card-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.note-card-content {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    line-height: 1.6;
+    flex: 1;
+}
+
+.note-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-xs);
+}
+
+.note-card-time {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
