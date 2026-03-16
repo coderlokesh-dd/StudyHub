@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 const ACCENT_COLORS = ['purple', 'blue', 'green', 'orange', 'pink'];
+const FONT_SIZES = [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150];
 
 export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState(() => localStorage.getItem('so-theme') || 'dark');
@@ -62,7 +63,8 @@ export function ThemeProvider({ children }) {
             theme, toggleTheme, setTheme,
             accent, setAccent,
             fontSize, setFontSize,
-            ACCENT_COLORS
+            ACCENT_COLORS,
+            FONT_SIZES
         }}>
             {children}
         </ThemeContext.Provider>

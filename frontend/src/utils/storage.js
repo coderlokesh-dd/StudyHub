@@ -122,13 +122,42 @@ const DEFAULT_DATA = {
         { id: 'ten-tasks', name: 'Productivity Pro', icon: '🚀', description: 'Completed 10 tasks', unlocked: false },
         { id: 'night-owl', name: 'Night Owl', icon: '🦉', description: 'Study after midnight', unlocked: false },
     ],
+    journal: [
+        {
+            id: 'j1',
+            date: new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0],
+            title: 'Productive Study Day',
+            content: 'Dear Diary,\nToday I studied Operating Systems and finally understood deadlocks. I felt productive and confident about my progress. Also revised some Data Structures concepts in the evening.',
+            mood: 'happy',
+            createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+        },
+        {
+            id: 'j2',
+            date: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0],
+            title: 'Exhausting but worth it',
+            content: 'Dear Diary,\nHad a long day with back-to-back lectures. Chemistry lab was tiring but the experiment went well. Need to catch up on sleep tonight.',
+            mood: 'tired',
+            createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+        },
+    ],
+    studySessions: [],
     totalStudyMinutes: 460,
 };
 
 export function loadData() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            // Merge in any new default keys that don't exist in saved data (migration)
+            const merged = { ...DEFAULT_DATA, ...parsed };
+            // Ensure arrays exist even if parsed data had them as undefined
+            if (!Array.isArray(merged.journal)) merged.journal = [];
+            if (!Array.isArray(merged.studySessions)) merged.studySessions = [];
+            return merged;
+        }
         saveData(DEFAULT_DATA);
         return DEFAULT_DATA;
     } catch {

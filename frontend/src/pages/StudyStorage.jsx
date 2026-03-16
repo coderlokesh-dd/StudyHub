@@ -4,6 +4,8 @@ import { HiOutlineFolder, HiOutlineDocumentSearch, HiOutlineDocumentText, HiOutl
 import Modal from '../components/Modal';
 import './StudyStorage.css';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function StudyStorage() {
     const fileInputRef = useRef(null);
     const [storage, setStorage] = useState([]);
@@ -16,22 +18,24 @@ export default function StudyStorage() {
     // States for custom modals
     const [renameModal, setRenameModal] = useState({ isOpen: false, itemId: null, currentTitle: '', newTitle: '' });
     const [newFolderModal, setNewFolderModal] = useState({ isOpen: false, title: '' });
+    const [fetchError, setFetchError] = useState(null);
 
     const currentFolder = path[path.length - 1];
 
     // Fetch data from backend
     const fetchStorage = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/studyvault');
+            setFetchError(null);
+            const res = await fetch(`${API_BASE}/api/studyvault`);
             if (!res.ok) {
-                console.error('API Error:', await res.text());
+                setFetchError('Failed to load Study Vault. Server returned an error.');
                 return;
             }
             const data = await res.json();
 
             // Prevent crashes if server doesn't return an Array
             if (!Array.isArray(data)) {
-                console.error('API returned non-array data:', data);
+                setFetchError('Unexpected data format from server.');
                 return;
             }
 
@@ -56,6 +60,7 @@ export default function StudyStorage() {
             });
         } catch (err) {
             console.error('Failed to fetch study vault', err);
+            setFetchError('Could not connect to the server. Make sure the backend is running.');
         }
     };
 
@@ -119,14 +124,14 @@ export default function StudyStorage() {
         try {
             if (path.length === 1) {
                 // Post Semester
-                await fetch('http://localhost:5000/api/semesters', {
+                await fetch(`${API_BASE}/api/semesters`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: 'sem' + Date.now(), title: title.trim() })
                 });
             } else if (path.length === 2) {
                 // Post Subject
-                await fetch('http://localhost:5000/api/subjects', {
+                await fetch(`${API_BASE}/api/subjects`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: 'sub' + Date.now(), semester_id: currentFolder.id, title: title.trim() })
@@ -150,7 +155,7 @@ export default function StudyStorage() {
         formData.append('title', file.name);
 
         try {
-            await fetch('http://localhost:5000/api/materials/upload', {
+            await fetch(`${API_BASE}/api/materials/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -171,7 +176,7 @@ export default function StudyStorage() {
             const endpoint = isMaterial ? `/api/materials/${itemId}` :
                 path.length === 2 ? `/api/subjects/${itemId}` : `/api/semesters/${itemId}`;
 
-            await fetch(`http://localhost:5000${endpoint}`, { method: 'DELETE' });
+            await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE' });
             await fetchStorage();
         } catch (err) {
             console.error('Failed to delete item', err);
@@ -195,7 +200,7 @@ export default function StudyStorage() {
                 const endpoint = isMaterial ? `/api/materials/${itemId}` :
                     path.length === 2 ? `/api/subjects/${itemId}` : `/api/semesters/${itemId}`;
 
-                await fetch(`http://localhost:5000${endpoint}`, {
+                await fetch(`${API_BASE}${endpoint}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title: newTitle.trim() })
@@ -284,6 +289,12 @@ export default function StudyStorage() {
                     />
                 </div>
             </div>
+
+            {fetchError && (
+                <div className="storage-error" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', padding: 'var(--space-md) var(--space-lg)', marginBottom: 'var(--space-md)', color: '#EF4444', fontSize: 'var(--text-sm)' }}>
+                    {fetchError}
+                </div>
+            )}
 
             <div className="storage-content">
                 <div className="list-header">
@@ -396,7 +407,7 @@ export default function StudyStorage() {
                         {/* Only PDF and Images can be natively previewed securely in an iframe */}
                         {viewingFile.fileUrl && (viewingFile.docType === 'pdf' || viewingFile.docType === 'image') ? (
                             <iframe
-                                src={viewingFile.fileUrl.startsWith('http') ? viewingFile.fileUrl : `http://localhost:5000${viewingFile.fileUrl}`}
+                                src={viewingFile.fileUrl.startsWith('http') ? viewingFile.fileUrl : `${API_BASE}${viewingFile.fileUrl}`}
                                 className="file-preview-iframe"
                                 title="File Preview"
                             />
@@ -410,7 +421,7 @@ export default function StudyStorage() {
                                         className="btn btn-primary"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            window.open(viewingFile.fileUrl.startsWith('http') ? viewingFile.fileUrl : `http://localhost:5000${viewingFile.fileUrl}`, '_blank');
+                                            window.open(viewingFile.fileUrl.startsWith('http') ? viewingFile.fileUrl : `${API_BASE}${viewingFile.fileUrl}`, '_blank');
                                         }}
                                     >
                                         <HiOutlineDownload size={18} style={{ marginRight: '8px' }} />

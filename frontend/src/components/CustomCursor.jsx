@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
 import './CustomCursor.css';
 
 export default function CustomCursor() {
-    // Check if device is touch or mobile to disable cursor
+    const [isMobile, setIsMobile] = useState(true);
+    const isVisibleRef = useRef(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
     const [isTextMode, setIsTextMode] = useState(false);
-    const [isMobile, setIsMobile] = useState(true);
 
     // Track mouse position
     const mouseX = useMotionValue(-100);
@@ -23,52 +23,61 @@ export default function CustomCursor() {
     const dotX = useSpring(mouseX, dotConfig);
     const dotY = useSpring(mouseY, dotConfig);
 
+    const handleMouseMove = useCallback((e) => {
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+
+        if (!isVisibleRef.current) {
+            isVisibleRef.current = true;
+            setIsVisible(true);
+        }
+    }, [mouseX, mouseY]);
+
+    const handleMouseLeave = useCallback(() => {
+        isVisibleRef.current = false;
+        setIsVisible(false);
+    }, []);
+
+    const handleMouseEnter = useCallback(() => {
+        isVisibleRef.current = true;
+        setIsVisible(true);
+    }, []);
+
+    const handleMouseOver = useCallback((e) => {
+        const target = e.target;
+
+        // Check if hovering over text inputs
+        const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+        if (isInput && target.type !== 'color' && target.type !== 'checkbox') {
+            setIsTextMode(true);
+            setIsHovering(false);
+            return;
+        } else {
+            setIsTextMode(false);
+        }
+
+        // Check if hovering over clickable/interactive elements
+        const isInteractive = target.closest('a') ||
+            target.closest('button') ||
+            target.closest('.card') ||
+            target.closest('.setting-row') ||
+            target.closest('.accent-swatch');
+
+        setIsHovering(!!isInteractive);
+    }, []);
+
     useEffect(() => {
-        // Disable natively on touch devices or small screens
         const checkMobile = () => {
             const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
             setIsMobile(isTouch || window.innerWidth < 768);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
+    useEffect(() => {
         if (isMobile) return;
-
-        const handleMouseMove = (e) => {
-            // Update physical coordinates
-            mouseX.set(e.clientX);
-            mouseY.set(e.clientY);
-
-            // Show cursor once initialized inside window
-            if (!isVisible) setIsVisible(true);
-        };
-
-        const handleMouseLeave = () => setIsVisible(false);
-        const handleMouseEnter = () => setIsVisible(true);
-
-        // Detect interactive elements globally via event delegation on document
-        const handleMouseOver = (e) => {
-            const target = e.target;
-
-            // Check if hovering over text inputs
-            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
-            if (isInput && target.type !== 'color' && target.type !== 'checkbox') {
-                setIsTextMode(true);
-                setIsHovering(false);
-                return;
-            } else {
-                setIsTextMode(false);
-            }
-
-            // Check if hovering over clickable/interactive elements
-            const isInteractive = target.closest('a') ||
-                target.closest('button') ||
-                target.closest('.card') ||
-                target.closest('.setting-row') ||
-                target.closest('.accent-swatch');
-
-            setIsHovering(!!isInteractive);
-        };
 
         document.addEventListener('mousemove', handleMouseMove, { passive: true });
         document.addEventListener('mouseleave', handleMouseLeave);
@@ -76,13 +85,12 @@ export default function CustomCursor() {
         document.addEventListener('mouseover', handleMouseOver);
 
         return () => {
-            window.removeEventListener('resize', checkMobile);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseleave', handleMouseLeave);
             document.removeEventListener('mouseenter', handleMouseEnter);
             document.removeEventListener('mouseover', handleMouseOver);
         };
-    }, [isMobile, isVisible, mouseX, mouseY]);
+    }, [isMobile, handleMouseMove, handleMouseLeave, handleMouseEnter, handleMouseOver]);
 
     // Don't render anything on mobile/touch
     if (isMobile) return null;
@@ -100,11 +108,8 @@ export default function CustomCursor() {
                 style={{
                     x: ringX,
                     y: ringY,
-                    // If text mode, shrink horizontal scale, expand vertical.
-                    // If hover mode, expand ring globally.
                     scale: isTextMode ? 1.2 : isHovering ? 1.6 : 1,
                     opacity: isTextMode ? 0.3 : isHovering ? 0.5 : 1,
-                    // Animate border color / backdrop based on hover
                 }}
                 transition={{ type: 'spring', ...springConfig }}
             />
@@ -115,7 +120,6 @@ export default function CustomCursor() {
                 style={{
                     x: dotX,
                     y: dotY,
-                    // Hide dot completely on text hover, shrink to almost nothing on normal hover
                     scale: isTextMode ? 0 : isHovering ? 0.5 : 1,
                     opacity: isTextMode ? 0 : 1,
                 }}

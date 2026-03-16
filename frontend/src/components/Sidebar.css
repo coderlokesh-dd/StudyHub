@@ -162,3 +162,27 @@
     color: white;
     font-weight: 700;
 }
+
+/* Journal entry dot indicator */
+.calendar-day {
+    position: relative;
+}
+
+.journal-dot {
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.calendar-day.today .journal-dot {
+    background: white;
+}
+
+.calendar-day.has-journal {
+    font-weight: 600;
+}
