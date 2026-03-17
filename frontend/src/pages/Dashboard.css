@@ -388,3 +388,140 @@
 .dash-badge-icon {
     font-size: 1.5rem;
 }
+
+/* ===== EXAM COUNTDOWN ===== */
+.dash-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+}
+
+.btn-sm {
+    padding: 6px 12px !important;
+    font-size: var(--text-xs) !important;
+}
+
+.dash-exams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+}
+
+.dash-exam-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.dash-exam-card:hover {
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.dash-exam-card.urgent {
+    border-color: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.03);
+}
+
+.dash-exam-color-bar {
+    width: 4px;
+    height: 36px;
+    border-radius: 4px;
+    background: var(--exam-color);
+    flex-shrink: 0;
+}
+
+.dash-exam-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-exam-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-exam-subject {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+.dash-exam-countdown {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.dash-exam-days {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.dash-exam-days.urgent {
+    color: #EF4444;
+}
+
+.dash-exam-date {
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.dash-exam-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.dash-exam-card:hover .dash-exam-delete {
+    opacity: 1;
+}
+
+.dash-exams-empty {
+    padding: var(--space-lg);
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-2xl);
+}
+
+.exam-color-picker {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.exam-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.exam-color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.exam-color-swatch.active {
+    border-color: var(--text-primary);
+    box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--text-primary);
+}

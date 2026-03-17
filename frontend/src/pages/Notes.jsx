@@ -6,15 +6,6 @@ import { getCategoryLabel, getCategoryClass, timeAgo } from '../utils/helpers';
 import Modal from '../components/Modal';
 import './Notes.css';
 
-const CATEGORIES = [
-    { value: 'general', label: 'General' },
-    { value: 'math', label: 'Math' },
-    { value: 'science', label: 'Science' },
-    { value: 'english', label: 'English' },
-    { value: 'history', label: 'History' },
-    { value: 'cs', label: 'Computer Science' },
-];
-
 const cardVariants = {
     initial: { opacity: 0, scale: 0.92 },
     animate: { opacity: 1, scale: 1 },
@@ -22,16 +13,27 @@ const cardVariants = {
 };
 
 export default function Notes() {
-    const { notes, addNote, updateNote, deleteNote, toggleFavorite } = useApp();
+    const { notes, subjects, addNote, updateNote, deleteNote, toggleFavorite } = useApp();
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
     const [modalOpen, setModalOpen] = useState(false);
     const [viewingNote, setViewingNote] = useState(null);
     const [editingNote, setEditingNote] = useState(null);
     const [form, setForm] = useState({ title: '', content: '', category: 'general' });
+    const [customCategory, setCustomCategory] = useState('');
+    const [isCustom, setIsCustom] = useState(false);
     const textareaRef = useRef(null);
 
-    // Auto-resize the textarea based on content
+    // Build category options: "General" + subjects from Study Vault + "Custom..."
+    const subjectOptions = (subjects || []).map(s => s.title);
+    // Deduplicate: unique subject titles
+    const uniqueSubjects = [...new Set(subjectOptions)];
+
+    // All categories currently in use (for filter dropdown)
+    const usedCategories = [...new Set(notes.map(n => n.category).filter(Boolean))];
+    // Merge subjects + used categories for filter
+    const allFilterOptions = [...new Set([...uniqueSubjects.map(s => s.toLowerCase()), ...usedCategories])];
+
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
@@ -50,6 +52,8 @@ export default function Notes() {
         setViewingNote(null);
         setEditingNote(null);
         setForm({ title: '', content: '', category: 'general' });
+        setCustomCategory('');
+        setIsCustom(false);
         setModalOpen(true);
     };
 
@@ -62,16 +66,40 @@ export default function Notes() {
     const openEdit = (note) => {
         setViewingNote(null);
         setEditingNote(note);
-        setForm({ title: note.title, content: note.content, category: note.category });
+        const cat = note.category || 'general';
+        // Check if category is a known option or custom
+        const isKnown = cat === 'general' || uniqueSubjects.some(s => s.toLowerCase() === cat);
+        setForm({ title: note.title, content: note.content, category: isKnown ? cat : '__custom__' });
+        setCustomCategory(isKnown ? '' : cat);
+        setIsCustom(!isKnown);
         setModalOpen(true);
+    };
+
+    const handleCategoryChange = (value) => {
+        if (value === '__custom__') {
+            setIsCustom(true);
+            setForm(prev => ({ ...prev, category: '__custom__' }));
+        } else {
+            setIsCustom(false);
+            setCustomCategory('');
+            setForm(prev => ({ ...prev, category: value }));
+        }
+    };
+
+    const getEffectiveCategory = () => {
+        if (isCustom && customCategory.trim()) {
+            return customCategory.trim().toLowerCase();
+        }
+        return form.category === '__custom__' ? 'general' : form.category;
     };
 
     const handleSave = () => {
         if (!form.title.trim()) return;
+        const saveData = { title: form.title, content: form.content, category: getEffectiveCategory() };
         if (editingNote) {
-            updateNote(editingNote.id, form);
+            updateNote(editingNote.id, saveData);
         } else {
-            addNote(form);
+            addNote(saveData);
         }
         setModalOpen(false);
     };
@@ -131,7 +159,9 @@ export default function Notes() {
                 </div>
                 <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="filter-select" id="notes-filter">
                     <option value="all">All Categories</option>
-                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    {allFilterOptions.map(cat => (
+                        <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
+                    ))}
                 </select>
             </div>
 
@@ -191,10 +221,30 @@ export default function Notes() {
                         </div>
                         <div className="form-group">
                             <label htmlFor="note-category">Category</label>
-                            <select id="note-category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                            <select id="note-category" value={isCustom ? '__custom__' : form.category} onChange={e => handleCategoryChange(e.target.value)}>
+                                <option value="general">General</option>
+                                {uniqueSubjects.length > 0 && (
+                                    <optgroup label="Your Subjects">
+                                        {uniqueSubjects.map(s => (
+                                            <option key={s} value={s.toLowerCase()}>{s}</option>
+                                        ))}
+                                    </optgroup>
+                                )}
+                                <option value="__custom__">Custom...</option>
                             </select>
                         </div>
+                        {isCustom && (
+                            <div className="form-group">
+                                <label htmlFor="note-custom-cat">Custom Category</label>
+                                <input
+                                    id="note-custom-cat"
+                                    value={customCategory}
+                                    onChange={e => setCustomCategory(e.target.value)}
+                                    placeholder="e.g. Operating Systems, DBMS..."
+                                    autoFocus
+                                />
+                            </div>
+                        )}
                         <div className="form-group">
                             <label htmlFor="note-content">Content</label>
                             <textarea

@@ -25,19 +25,25 @@ export function AppProvider({ children }) {
     const [streak, setStreak] = useState(DEFAULT_STREAK);
     const [badges, setBadges] = useState(DEFAULT_BADGES);
     const [totalStudyMinutes, setTotalStudyMinutes] = useState(0);
+    const [exams, setExams] = useState([]);
+    const [subtasks, setSubtasks] = useState([]);
+    const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Load all data from backend on mount
     useEffect(() => {
         async function loadAll() {
             try {
-                const [notesData, tasksData, journalData, sessionsData, logData, userData] = await Promise.all([
+                const [notesData, tasksData, journalData, sessionsData, logData, userData, examsData, subtasksData, subjectsData] = await Promise.all([
                     api.fetchNotes(),
                     api.fetchTasks(),
                     api.fetchJournal(),
                     api.fetchStudySessions(),
                     api.fetchStudyLog(),
                     api.fetchUserData(),
+                    api.fetchExams(),
+                    api.fetchAllSubtasks(),
+                    api.fetchSubjects().catch(() => []),
                 ]);
 
                 // Map DB column names to frontend camelCase
@@ -60,6 +66,15 @@ export function AppProvider({ children }) {
                     created_at: s.created_at,
                 })));
                 setStudyLog(logData.map(l => ({ date: l.date, minutes: l.minutes })));
+                setExams(examsData.map(e => ({
+                    id: e.id, title: e.title, subject: e.subject,
+                    examDate: e.exam_date, color: e.color, createdAt: e.created_at,
+                })));
+                setSubtasks(subtasksData.map(s => ({
+                    id: s.id, taskId: s.task_id, title: s.title,
+                    completed: s.completed, createdAt: s.created_at,
+                })));
+                setSubjects(subjectsData);
 
                 if (userData.streak) setStreak(userData.streak);
                 if (userData.badges) setBadges(userData.badges);
@@ -198,9 +213,40 @@ export function AppProvider({ children }) {
         setJournal(prev => prev.filter(j => j.date !== date));
     }, []);
 
+    // ---------- EXAMS ----------
+    const addExam = useCallback(async (exam) => {
+        const newExam = { id: generateId(), ...exam };
+        await api.createExam({ ...newExam, exam_date: newExam.examDate });
+        setExams(prev => [...prev, { ...newExam, createdAt: new Date().toISOString() }]);
+    }, []);
+
+    const deleteExamFn = useCallback(async (id) => {
+        await api.deleteExam(id);
+        setExams(prev => prev.filter(e => e.id !== id));
+    }, []);
+
+    // ---------- SUBTASKS ----------
+    const addSubtask = useCallback(async (taskId, title) => {
+        const id = generateId();
+        await api.createSubtask(taskId, { id, title });
+        setSubtasks(prev => [...prev, { id, taskId, title, completed: false, createdAt: new Date().toISOString() }]);
+    }, []);
+
+    const toggleSubtask = useCallback(async (id) => {
+        const st = subtasks.find(s => s.id === id);
+        if (!st) return;
+        const completed = !st.completed;
+        await api.updateSubtask(id, { completed });
+        setSubtasks(prev => prev.map(s => s.id === id ? { ...s, completed } : s));
+    }, [subtasks]);
+
+    const deleteSubtaskFn = useCallback(async (id) => {
+        await api.deleteSubtask(id);
+        setSubtasks(prev => prev.filter(s => s.id !== id));
+    }, []);
+
     // ---------- RESET ----------
     const resetAllData = useCallback(() => {
-        // For now, just clear local state. A full reset endpoint could be added later.
         setNotes([]);
         setTasks([]);
         setJournal([]);
@@ -209,6 +255,8 @@ export function AppProvider({ children }) {
         setStreak(DEFAULT_STREAK);
         setBadges(DEFAULT_BADGES);
         setTotalStudyMinutes(0);
+        setExams([]);
+        setSubtasks([]);
     }, []);
 
     const value = {
@@ -220,11 +268,16 @@ export function AppProvider({ children }) {
         totalStudyMinutes,
         journal,
         studySessions,
+        exams,
+        subtasks,
+        subjects,
         loading,
         addNote, updateNote, deleteNote, toggleFavorite,
         addTask, updateTask: updateTaskFn, toggleTask, deleteTask: deleteTaskFn,
         logStudyTime: logStudyTimeFn, addStudySession, resetAllData,
         getJournalEntry, saveJournalEntry: saveJournalEntryFn, deleteJournalEntry: deleteJournalEntryFn,
+        addExam, deleteExam: deleteExamFn,
+        addSubtask, toggleSubtask, deleteSubtask: deleteSubtaskFn,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

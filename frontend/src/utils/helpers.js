@@ -34,20 +34,22 @@ export function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
 }
 
+const KNOWN_CATEGORIES = {
+    math: 'Math', science: 'Science', english: 'English',
+    history: 'History', cs: 'Computer Science', general: 'General',
+};
+
 export function getCategoryLabel(cat) {
-    const map = {
-        math: 'Math',
-        science: 'Science',
-        english: 'English',
-        history: 'History',
-        cs: 'Computer Science',
-        general: 'General',
-    };
-    return map[cat] || 'General';
+    if (!cat) return 'General';
+    if (KNOWN_CATEGORIES[cat]) return KNOWN_CATEGORIES[cat];
+    // Custom or subject-based category — capitalize first letter of each word
+    return cat.replace(/\b\w/g, c => c.toUpperCase());
 }
 
 export function getCategoryClass(cat) {
-    return `cat-${cat || 'general'}`;
+    if (!cat) return 'cat-general';
+    if (KNOWN_CATEGORIES[cat]) return `cat-${cat}`;
+    return 'cat-custom';
 }
 
 export function getPriorityClass(priority) {

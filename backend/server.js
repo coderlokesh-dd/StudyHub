@@ -10,6 +10,10 @@ const tasksRouter = require('./routes/tasks');
 const journalRouter = require('./routes/journal');
 const studySessionsRouter = require('./routes/studySessions');
 const userDataRouter = require('./routes/userData');
+const flashcardsRouter = require('./routes/flashcards');
+const examsRouter = require('./routes/exams');
+const subtasksRouter = require('./routes/subtasks');
+const timetableRouter = require('./routes/timetable');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +34,10 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/journal', journalRouter);
 app.use('/api/study-sessions', studySessionsRouter);
 app.use('/api/user-data', userDataRouter);
+app.use('/api/flashcards', flashcardsRouter);
+app.use('/api/exams', examsRouter);
+app.use('/api/tasks', subtasksRouter);
+app.use('/api/timetable', timetableRouter);
 
 // Compound endpoint to fetch the entire Study Vault hierarchy
 app.get('/api/studyvault', async (req, res) => {

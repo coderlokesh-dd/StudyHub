@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api';
 
 async function request(path, options = {}) {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -11,6 +11,9 @@ async function request(path, options = {}) {
     }
     return res.json();
 }
+
+// --- Subjects ---
+export const fetchSubjects = () => request('/subjects');
 
 // --- Notes ---
 export const fetchNotes = () => request('/notes');
@@ -41,3 +44,32 @@ export const saveUserData = (key, value) => request(`/user-data/${key}`, { metho
 // --- Study Log ---
 export const fetchStudyLog = () => request('/user-data/study-log');
 export const logStudyTime = (date, minutes) => request('/user-data/study-log', { method: 'POST', body: JSON.stringify({ date, minutes }) });
+
+// --- Flashcards ---
+export const fetchFlashcardDecks = () => request('/flashcards/decks');
+export const createFlashcardDeck = (deck) => request('/flashcards/decks', { method: 'POST', body: JSON.stringify(deck) });
+export const deleteFlashcardDeck = (id) => request(`/flashcards/decks/${id}`, { method: 'DELETE' });
+export const fetchFlashcards = (deckId) => request(`/flashcards/decks/${deckId}/cards`);
+export const fetchReviewCards = (deckId) => request(`/flashcards/decks/${deckId}/review`);
+export const createFlashcard = (deckId, card) => request(`/flashcards/decks/${deckId}/cards`, { method: 'POST', body: JSON.stringify(card) });
+export const updateFlashcard = (id, updates) => request(`/flashcards/cards/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
+export const deleteFlashcard = (id) => request(`/flashcards/cards/${id}`, { method: 'DELETE' });
+
+// --- Exams ---
+export const fetchExams = () => request('/exams');
+export const createExam = (exam) => request('/exams', { method: 'POST', body: JSON.stringify(exam) });
+export const updateExam = (id, updates) => request(`/exams/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
+export const deleteExam = (id) => request(`/exams/${id}`, { method: 'DELETE' });
+
+// --- Subtasks ---
+export const fetchAllSubtasks = () => request('/tasks/all/subtasks');
+export const fetchSubtasks = (taskId) => request(`/tasks/${taskId}/subtasks`);
+export const createSubtask = (taskId, subtask) => request(`/tasks/${taskId}/subtasks`, { method: 'POST', body: JSON.stringify(subtask) });
+export const updateSubtask = (id, updates) => request(`/tasks/subtasks/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
+export const deleteSubtask = (id) => request(`/tasks/subtasks/${id}`, { method: 'DELETE' });
+
+// --- Timetable ---
+export const fetchTimetable = () => request('/timetable');
+export const createTimetableEntry = (entry) => request('/timetable', { method: 'POST', body: JSON.stringify(entry) });
+export const updateTimetableEntry = (id, updates) => request(`/timetable/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
+export const deleteTimetableEntry = (id) => request(`/timetable/${id}`, { method: 'DELETE' });

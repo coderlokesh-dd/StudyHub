@@ -1,0 +1,277 @@
+/* ===== FLASHCARDS ===== */
+.fc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.fc-header h1 {
+    font-size: var(--text-2xl);
+    letter-spacing: -0.03em;
+}
+
+.fc-header-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.fc-deck-sub {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    margin-top: 2px;
+}
+
+/* --- Decks Grid --- */
+.fc-decks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-lg);
+}
+
+.fc-deck-card {
+    padding: var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.fc-deck-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+}
+
+.fc-deck-card h3 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-xs);
+}
+
+.fc-deck-subject {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.fc-deck-delete {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.fc-deck-card:hover .fc-deck-delete {
+    opacity: 1;
+}
+
+/* --- Cards Grid --- */
+.fc-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+.fc-card-item {
+    padding: var(--space-lg);
+}
+
+.fc-card-front-text {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    line-height: 1.5;
+}
+
+.fc-card-back-text {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    line-height: 1.5;
+    opacity: 0.7;
+}
+
+.fc-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fc-card-box {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+}
+
+/* --- Review Mode --- */
+.fc-review-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    padding: var(--space-2xl) 0;
+}
+
+.fc-review-progress {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+}
+
+.fc-flip-card {
+    width: 100%;
+    max-width: 500px;
+    min-height: 280px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.fc-flip-inner {
+    position: relative;
+    width: 100%;
+    min-height: 280px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.fc-flip-card.flipped .fc-flip-inner {
+    transform: rotateY(180deg);
+}
+
+.fc-flip-front,
+.fc-flip-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    text-align: center;
+}
+
+.fc-flip-back {
+    transform: rotateY(180deg);
+    background: rgba(var(--accent-rgb), 0.04);
+    border-color: rgba(var(--accent-rgb), 0.2);
+}
+
+.fc-flip-label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+}
+
+.fc-flip-front p,
+.fc-flip-back p {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.fc-flip-hint {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    opacity: 0.5;
+}
+
+/* --- Review Actions --- */
+.fc-review-actions {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.fc-btn-wrong {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 12px 28px;
+    border-radius: var(--radius-xl);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.fc-btn-wrong:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.fc-btn-correct {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 12px 28px;
+    border-radius: var(--radius-xl);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.fc-btn-correct:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+/* --- Box Indicator --- */
+.fc-box-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    font-weight: 600;
+}
+
+.fc-box-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.fc-box-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-subtle);
+}
+
+.fc-box-dot.filled {
+    background: var(--accent);
+}
+
+@media (max-width: 600px) {
+    .fc-decks-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .fc-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fc-flip-card {
+        max-width: 100%;
+    }
+}

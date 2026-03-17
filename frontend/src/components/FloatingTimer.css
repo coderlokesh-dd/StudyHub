@@ -350,7 +350,51 @@
         right: 8px;
     }
 
-    .ft-subject {
+    .ft-subject,
+    .ft-pomodoro-info {
         display: none;
     }
+}
+
+/* --- Pomodoro --- */
+.floating-timer.pomodoro {
+    border-color: rgba(239, 68, 68, 0.2);
+    box-shadow: var(--shadow-lg), 0 0 16px rgba(239, 68, 68, 0.08);
+}
+
+.ft-ring-progress.pomodoro-work {
+    stroke: #EF4444;
+}
+
+.ft-ring-progress.pomodoro-break {
+    stroke: #10B981;
+}
+
+.floating-timer.pomodoro .ft-ring-icon {
+    font-size: 10px;
+}
+
+.ft-pomodoro-info {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ft-pomodoro-status {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    padding: 0 12px 8px;
+    letter-spacing: 0.02em;
+}
+
+.ft-btn.skip {
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.ft-btn.skip:hover {
+    background: rgba(245, 158, 11, 0.1);
 }

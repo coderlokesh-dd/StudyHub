@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { HiOutlinePencilAlt, HiOutlineClipboardCheck, HiOutlineFire, HiOutlineTrendingUp } from 'react-icons/hi';
+import { HiOutlinePencilAlt, HiOutlineClipboardCheck, HiOutlineTrendingUp, HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { getGreeting, getSmartReminders, getRecommendations, timeAgo, getCategoryLabel, getCategoryClass } from '../utils/helpers';
+import Modal from '../components/Modal';
 import './Dashboard.css';
 
 const containerVariants = {
@@ -13,8 +15,23 @@ const itemVariants = {
     animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } },
 };
 
+function getCountdown(dateStr) {
+    const now = new Date();
+    const exam = new Date(dateStr + 'T23:59:59');
+    const diff = exam - now;
+    if (diff <= 0) return { text: 'Today!', urgent: true };
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    if (days === 0) return { text: `${hours}h left`, urgent: true };
+    if (days <= 3) return { text: `${days}d ${hours}h`, urgent: true };
+    if (days <= 7) return { text: `${days} days`, urgent: false };
+    return { text: `${days} days`, urgent: false };
+}
+
+const EXAM_COLORS = ['#7C5CFF', '#3B82F6', '#EF4444', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6'];
+
 export default function Dashboard() {
-    const { notes, tasks, streak, totalStudyMinutes, badges } = useApp();
+    const { notes, tasks, streak, totalStudyMinutes, badges, exams, addExam, deleteExam } = useApp();
     const navigate = useNavigate();
     const greeting = getGreeting();
     const reminders = getSmartReminders(notes, tasks);
@@ -22,6 +39,23 @@ export default function Dashboard() {
     const todayTasks = tasks.filter(t => !t.completed);
     const completedCount = tasks.filter(t => t.completed).length;
     const unlockedBadges = badges.filter(b => b.unlocked).length;
+
+    const [examModalOpen, setExamModalOpen] = useState(false);
+    const [examForm, setExamForm] = useState({ title: '', subject: '', examDate: '', color: '#7C5CFF' });
+
+    const handleAddExam = () => {
+        if (!examForm.title.trim() || !examForm.examDate) return;
+        addExam(examForm);
+        setExamForm({ title: '', subject: '', examDate: '', color: '#7C5CFF' });
+        setExamModalOpen(false);
+    };
+
+    // Sort exams by date, filter to future/today only
+    const today = new Date().toISOString().split('T')[0];
+    const upcomingExams = [...(exams || [])]
+        .filter(e => e.examDate >= today)
+        .sort((a, b) => a.examDate.localeCompare(b.examDate))
+        .slice(0, 6);
 
     return (
         <motion.div className="page container" variants={containerVariants} initial="initial" animate="animate">
@@ -86,6 +120,55 @@ export default function Dashboard() {
                     <span className="dash-stat-value">{unlockedBadges}</span>
                     <span className="dash-stat-label">Badges</span>
                 </motion.div>
+            </motion.section>
+
+            {/* Exam Countdown */}
+            <motion.section variants={itemVariants}>
+                <div className="dash-section-header">
+                    <h3 className="section-title">📅 Upcoming Exams</h3>
+                    <motion.button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setExamModalOpen(true)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <HiOutlinePlus size={16} /> Add
+                    </motion.button>
+                </div>
+                {upcomingExams.length > 0 ? (
+                    <div className="dash-exams-grid">
+                        {upcomingExams.map(exam => {
+                            const countdown = getCountdown(exam.examDate);
+                            return (
+                                <motion.div
+                                    key={exam.id}
+                                    className={`dash-exam-card ${countdown.urgent ? 'urgent' : ''}`}
+                                    whileHover={{ y: -3 }}
+                                    style={{ '--exam-color': exam.color || '#7C5CFF' }}
+                                >
+                                    <div className="dash-exam-color-bar" />
+                                    <div className="dash-exam-info">
+                                        <span className="dash-exam-title">{exam.title}</span>
+                                        {exam.subject && <span className="dash-exam-subject">{exam.subject}</span>}
+                                    </div>
+                                    <div className="dash-exam-countdown">
+                                        <span className={`dash-exam-days ${countdown.urgent ? 'urgent' : ''}`}>
+                                            {countdown.text}
+                                        </span>
+                                        <span className="dash-exam-date">{exam.examDate}</span>
+                                    </div>
+                                    <button className="btn-icon dash-exam-delete" onClick={() => deleteExam(exam.id)}>
+                                        <HiOutlineTrash size={14} />
+                                    </button>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="dash-exams-empty">
+                        <span>No upcoming exams. Click + Add to create one.</span>
+                    </div>
+                )}
             </motion.section>
 
             {/* Smart Reminders */}
@@ -177,6 +260,41 @@ export default function Dashboard() {
                     ))}
                 </div>
             </motion.section>
+
+            {/* Exam Modal */}
+            <Modal isOpen={examModalOpen} onClose={() => setExamModalOpen(false)} title="Add Exam">
+                <div className="form-group">
+                    <label htmlFor="exam-title">Exam Name</label>
+                    <input id="exam-title" value={examForm.title} onChange={e => setExamForm({...examForm, title: e.target.value})} placeholder="e.g. Physics Final" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="exam-subject">Subject <span style={{opacity:0.5}}>(optional)</span></label>
+                    <input id="exam-subject" value={examForm.subject} onChange={e => setExamForm({...examForm, subject: e.target.value})} placeholder="e.g. Physics" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="exam-date">Exam Date</label>
+                    <input type="date" id="exam-date" value={examForm.examDate} onChange={e => setExamForm({...examForm, examDate: e.target.value})} />
+                </div>
+                <div className="form-group">
+                    <label>Color</label>
+                    <div className="exam-color-picker">
+                        {EXAM_COLORS.map(c => (
+                            <button
+                                key={c}
+                                className={`exam-color-swatch ${examForm.color === c ? 'active' : ''}`}
+                                style={{ background: c }}
+                                onClick={() => setExamForm({...examForm, color: c})}
+                            />
+                        ))}
+                    </div>
+                </div>
+                <div className="form-actions">
+                    <button className="btn btn-ghost" onClick={() => setExamModalOpen(false)}>Cancel</button>
+                    <motion.button className="btn btn-primary" onClick={handleAddExam} whileHover={{ scale: 1.03 }}>
+                        Add Exam
+                    </motion.button>
+                </div>
+            </Modal>
         </motion.div>
     );
 }

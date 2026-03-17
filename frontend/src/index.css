@@ -323,6 +323,7 @@ textarea {
     padding-left: var(--sidebar-width);
     padding-bottom: var(--space-2xl);
     padding-top: var(--space-xl);
+    transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -507,6 +508,11 @@ textarea {
 .cat-general {
   background: rgba(139, 139, 163, 0.12);
   color: #8B8BA3;
+}
+
+.cat-custom {
+  background: rgba(124, 92, 255, 0.10);
+  color: #A78BFA;
 }
 
 /* ---- Empty state ---- */

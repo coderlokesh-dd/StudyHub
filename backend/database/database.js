@@ -107,6 +107,59 @@ async function initializeDatabase(client, release) {
             value JSONB NOT NULL
         )`);
 
+        // Create Flashcard Decks Table
+        await client.query(`CREATE TABLE IF NOT EXISTS flashcard_decks (
+            id VARCHAR(255) PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            subject VARCHAR(255),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Create Flashcards Table (Leitner spaced repetition)
+        await client.query(`CREATE TABLE IF NOT EXISTS flashcards (
+            id VARCHAR(255) PRIMARY KEY,
+            deck_id VARCHAR(255) NOT NULL,
+            front TEXT NOT NULL,
+            back TEXT NOT NULL,
+            box INTEGER DEFAULT 1,
+            next_review DATE DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT fk_deck FOREIGN KEY(deck_id) REFERENCES flashcard_decks(id) ON DELETE CASCADE
+        )`);
+
+        // Create Exams Table
+        await client.query(`CREATE TABLE IF NOT EXISTS exams (
+            id VARCHAR(255) PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            subject VARCHAR(255),
+            exam_date VARCHAR(50) NOT NULL,
+            color VARCHAR(20) DEFAULT '#7C5CFF',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        // Create Subtasks Table
+        await client.query(`CREATE TABLE IF NOT EXISTS subtasks (
+            id VARCHAR(255) PRIMARY KEY,
+            task_id VARCHAR(255) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            completed BOOLEAN DEFAULT false,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT fk_task FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )`);
+
+        // Create Timetable Entries Table
+        await client.query(`CREATE TABLE IF NOT EXISTS timetable_entries (
+            id VARCHAR(255) PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            subject VARCHAR(255),
+            day_of_week INTEGER NOT NULL,
+            start_time VARCHAR(10) NOT NULL,
+            end_time VARCHAR(10) NOT NULL,
+            color VARCHAR(20) DEFAULT '#7C5CFF',
+            location VARCHAR(255),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+
         // Insert initial mock data if empty
         const res = await client.query('SELECT COUNT(*) as count FROM semesters');
         if (parseInt(res.rows[0].count) === 0) {

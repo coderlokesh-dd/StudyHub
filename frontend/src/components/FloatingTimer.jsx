@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiPlay, HiPause, HiStop, HiClock, HiLightningBolt, HiX, HiCheck, HiExclamation } from 'react-icons/hi';
+import { HiPlay, HiPause, HiStop, HiClock, HiLightningBolt, HiX, HiCheck, HiExclamation, HiFastForward } from 'react-icons/hi';
 import { useStudyTimer } from '../contexts/StudyTimerContext';
 import { useNavigate } from 'react-router-dom';
 import './FloatingTimer.css';
@@ -21,10 +21,17 @@ function formatMinutes(totalSeconds) {
     return `${mins}m ${secs}s`;
 }
 
+const PHASE_LABELS = {
+    work: '🔴 Work',
+    shortBreak: '🟢 Break',
+    longBreak: '🟣 Long Break',
+};
+
 export default function FloatingTimer() {
     const {
         session, status, elapsed, isActive, fullscreenWarning,
-        pause, resume, stop, saveAndEnd, discard, dismissFullscreenWarning,
+        pomodoroPhase, pomodoroCount, phaseElapsed, getCurrentPhaseDuration,
+        pause, resume, stop, saveAndEnd, discard, dismissFullscreenWarning, skipPhase,
     } = useStudyTimer();
     const [expanded, setExpanded] = useState(false);
     const navigate = useNavigate();
@@ -32,17 +39,28 @@ export default function FloatingTimer() {
     if (!isActive) return null;
 
     const isDeep = session?.mode === 'deep';
+    const isPomodoro = session?.mode === 'pomodoro';
     const isUnlimited = session?.isUnlimited;
     const totalSeconds = session?.totalSeconds || 0;
-    const remaining = totalSeconds - elapsed;
-    const progress = !isUnlimited && totalSeconds > 0 ? Math.min(elapsed / totalSeconds, 1) : 0;
     const isDone = status === 'done';
 
-    const displayTime = isDone
-        ? formatMinutes(elapsed)
-        : isUnlimited
-            ? formatTime(elapsed)
-            : formatTime(Math.max(remaining, 0));
+    // Pomodoro display
+    let displayTime;
+    let progress = 0;
+    if (isDone) {
+        displayTime = formatMinutes(elapsed);
+    } else if (isPomodoro) {
+        const phaseDuration = getCurrentPhaseDuration();
+        const remaining = Math.max(phaseDuration - phaseElapsed, 0);
+        displayTime = formatTime(remaining);
+        progress = phaseDuration > 0 ? Math.min(phaseElapsed / phaseDuration, 1) : 0;
+    } else if (isUnlimited) {
+        displayTime = formatTime(elapsed);
+    } else {
+        const remaining = totalSeconds - elapsed;
+        displayTime = formatTime(Math.max(remaining, 0));
+        progress = totalSeconds > 0 ? Math.min(elapsed / totalSeconds, 1) : 0;
+    }
 
     const circumference = 2 * Math.PI * 16;
 
@@ -56,6 +74,21 @@ export default function FloatingTimer() {
             return;
         }
         stop();
+    };
+
+    const getModeIcon = () => {
+        if (isPomodoro) return '🍅';
+        if (isDeep) return <HiLightningBolt size={12} />;
+        return <HiClock size={12} />;
+    };
+
+    const getRingClass = () => {
+        if (isPomodoro) {
+            if (pomodoroPhase === 'work') return 'pomodoro-work';
+            return 'pomodoro-break';
+        }
+        if (isDeep) return 'deep';
+        return '';
     };
 
     return (
@@ -107,9 +140,11 @@ export default function FloatingTimer() {
                         exit={{ opacity: 0, scale: 0.8 }}
                     >
                         <div className="ft-done-content">
-                            <span className="ft-done-icon">{isDeep ? '🏆' : '🎉'}</span>
+                            <span className="ft-done-icon">{isPomodoro ? '🍅' : isDeep ? '🏆' : '🎉'}</span>
                             <div className="ft-done-info">
-                                <span className="ft-done-label">Session Complete</span>
+                                <span className="ft-done-label">
+                                    {isPomodoro ? `${pomodoroCount} Cycles Done!` : 'Session Complete'}
+                                </span>
                                 <span className="ft-done-time">{displayTime}</span>
                             </div>
                             <div className="ft-done-actions">
@@ -129,7 +164,7 @@ export default function FloatingTimer() {
             {!isDone && (
                 <AnimatePresence>
                     <motion.div
-                        className={`floating-timer ${isDeep ? 'deep' : 'casual'} ${expanded ? 'expanded' : ''}`}
+                        className={`floating-timer ${isPomodoro ? 'pomodoro' : isDeep ? 'deep' : 'casual'} ${expanded ? 'expanded' : ''}`}
                         initial={{ opacity: 0, scale: 0.8, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8 }}
@@ -140,9 +175,9 @@ export default function FloatingTimer() {
                             <div className="ft-ring-mini">
                                 <svg viewBox="0 0 36 36" className="ft-ring-svg">
                                     <circle className="ft-ring-bg" cx="18" cy="18" r="16" />
-                                    {!isUnlimited && (
+                                    {(!isUnlimited || isPomodoro) && (
                                         <circle
-                                            className={`ft-ring-progress ${isDeep ? 'deep' : ''}`}
+                                            className={`ft-ring-progress ${getRingClass()}`}
                                             cx="18" cy="18" r="16"
                                             strokeDasharray={circumference}
                                             strokeDashoffset={circumference * (1 - progress)}
@@ -150,11 +185,16 @@ export default function FloatingTimer() {
                                     )}
                                 </svg>
                                 <div className="ft-ring-icon">
-                                    {isDeep ? <HiLightningBolt size={12} /> : <HiClock size={12} />}
+                                    {getModeIcon()}
                                 </div>
                             </div>
                             <span className="ft-time">{displayTime}</span>
-                            {session?.subject && <span className="ft-subject">{session.subject}</span>}
+                            {isPomodoro && (
+                                <span className="ft-pomodoro-info">
+                                    {PHASE_LABELS[pomodoroPhase]} · {pomodoroCount + 1}/{session.totalCycles || 4}
+                                </span>
+                            )}
+                            {!isPomodoro && session?.subject && <span className="ft-subject">{session.subject}</span>}
                             <span className={`ft-status-dot ${status}`} />
                         </div>
 
@@ -177,16 +217,26 @@ export default function FloatingTimer() {
                                                 <HiPlay size={16} />
                                             </button>
                                         )}
+                                        {isPomodoro && (
+                                            <button className="ft-btn skip" title="Skip Phase" onClick={skipPhase}>
+                                                <HiFastForward size={16} />
+                                            </button>
+                                        )}
                                         <button className="ft-btn stop" title="Stop" onClick={handleStop}>
                                             <HiStop size={16} />
                                         </button>
                                         <button className="ft-btn nav" title="Go to Study Zone" onClick={() => { setExpanded(false); navigate('/study-zone'); }}>
-                                            {isDeep ? <HiLightningBolt size={14} /> : <HiClock size={14} />}
+                                            {isPomodoro ? '🍅' : isDeep ? <HiLightningBolt size={14} /> : <HiClock size={14} />}
                                         </button>
                                     </div>
                                     {isDeep && !canExitDeep && (
                                         <div className="ft-lock-msg">
                                             Exit locked for {Math.ceil(((session.exitDelay || 0) * 60 - elapsed) / 60)}m
+                                        </div>
+                                    )}
+                                    {isPomodoro && (
+                                        <div className="ft-pomodoro-status">
+                                            {PHASE_LABELS[pomodoroPhase]} · Cycle {pomodoroCount + 1}/{session.totalCycles || 4}
                                         </div>
                                     )}
                                 </motion.div>

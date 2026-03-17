@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineDocumentText, HiOutlineClipboardCheck, HiOutlineChartBar, HiOutlineCog, HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineDocumentText, HiOutlineClipboardCheck, HiOutlineChartBar, HiOutlineCog, HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt, HiOutlineCollection, HiOutlineCalendar } from 'react-icons/hi';
 import { motion } from 'framer-motion';
 import './BottomNav.css';
 
@@ -10,6 +10,7 @@ const navItems = [
     { to: '/progress', icon: HiOutlineChartBar, label: 'Stats' },
     { to: '/storage', icon: HiOutlineFolder, label: 'Vault' },
     { to: '/study-zone', icon: HiOutlineLightningBolt, label: 'Focus' },
+    { to: '/timetable', icon: HiOutlineCalendar, label: 'Schedule' },
     { to: '/journal', icon: HiOutlineBookOpen, label: 'Journal' },
     { to: '/settings', icon: HiOutlineCog, label: 'Settings' },
 ];

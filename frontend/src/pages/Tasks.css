@@ -154,3 +154,162 @@
 .task-item:hover .task-delete {
     opacity: 1;
 }
+
+/* ===== TASK LAYOUT WITH SUBTASKS ===== */
+.task-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0 !important;
+    border-left: 3px solid transparent;
+    border-color: var(--border-subtle) !important;
+    transition: all var(--transition-base);
+    overflow: hidden;
+}
+
+.task-main-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+}
+
+.task-expand {
+    opacity: 0.4;
+    transition: opacity var(--transition-fast);
+}
+
+.task-item:hover .task-expand {
+    opacity: 1;
+}
+
+/* --- Subtask Progress Bar --- */
+.subtask-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: 6px;
+}
+
+.subtask-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border-subtle);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 120px;
+}
+
+.subtask-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.subtask-progress-text {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* --- Subtasks Section --- */
+.subtasks-section {
+    border-top: 1px solid var(--border-subtle);
+    overflow: hidden;
+}
+
+.subtasks-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px var(--space-lg) 8px calc(var(--space-lg) + 34px);
+    transition: background var(--transition-fast);
+}
+
+.subtask-item:hover {
+    background: var(--bg-card-hover);
+}
+
+.subtask-item.completed {
+    opacity: 0.5;
+}
+
+.subtask-checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid var(--border-color-hover);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.subtask-checkbox:hover {
+    border-color: var(--accent);
+}
+
+.subtask-checkbox.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.subtask-title {
+    font-size: var(--text-xs);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.subtask-title.done {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+}
+
+.subtask-delete {
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.subtask-item:hover .subtask-delete {
+    opacity: 1;
+}
+
+.subtask-add-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px var(--space-lg) 8px calc(var(--space-lg) + 34px);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.subtask-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    outline: none;
+    padding: 4px 0;
+}
+
+.subtask-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.btn-xs {
+    padding: 4px 8px !important;
+    font-size: var(--text-xs) !important;
+}

@@ -14,6 +14,7 @@ import StudyStorage from './pages/StudyStorage';
 import Journal from './pages/Journal';
 import JournalList from './pages/JournalList';
 import StudyZone from './pages/StudyZone';
+import Timetable from './pages/Timetable';
 
 export default function App() {
     return (
@@ -31,6 +32,7 @@ export default function App() {
                                 <Route path="/progress" element={<Progress />} />
                                 <Route path="/storage" element={<StudyStorage />} />
                                 <Route path="/study-zone" element={<StudyZone />} />
+                                <Route path="/timetable" element={<Timetable />} />
                                 <Route path="/journal" element={<JournalList />} />
                                 <Route path="/journal/:date" element={<Journal />} />
                                 <Route path="/settings" element={<Settings />} />
