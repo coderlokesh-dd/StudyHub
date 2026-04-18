@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineDocumentText, HiOutlineClipboardCheck, HiOutlineChartBar, HiOutlineCog, HiChevronLeft, HiChevronRight, HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt, HiOutlineCollection, HiOutlineCalendar } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineDocumentText, HiOutlineClipboardCheck, HiOutlineChartBar, HiOutlineCog, HiChevronLeft, HiChevronRight, HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt, HiOutlineCollection, HiOutlineCalendar, HiOutlineLogout, HiOutlineArchive } from 'react-icons/hi';
 const SidebarToggleIcon = ({ size = 18 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="3" />
@@ -9,6 +9,7 @@ const SidebarToggleIcon = ({ size = 18 }) => (
 );
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 
 const navItems = [
@@ -16,7 +17,8 @@ const navItems = [
     { to: '/notes', icon: HiOutlineDocumentText, label: 'Notes' },
     { to: '/tasks', icon: HiOutlineClipboardCheck, label: 'Tasks' },
     { to: '/progress', icon: HiOutlineChartBar, label: 'Progress' },
-    { to: '/storage', icon: HiOutlineFolder, label: 'Study Vault' },
+    { to: '/storage', icon: HiOutlineFolder, label: 'Study Storage' },
+    { to: '/vault', icon: HiOutlineArchive, label: 'Study Vault' },
     { to: '/study-zone', icon: HiOutlineLightningBolt, label: 'Study Zone' },
     { to: '/timetable', icon: HiOutlineCalendar, label: 'Timetable' },
     { to: '/journal', icon: HiOutlineBookOpen, label: 'Journal' },
@@ -117,6 +119,7 @@ export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
     const { journal } = useApp();
+    const { signOut, profile } = useAuth();
     const mouseY = useMotionValue(Infinity);
     const [collapsed, setCollapsed] = useState(() => {
         try { return JSON.parse(localStorage.getItem('sidebar_collapsed')) || false; } catch { return false; }
@@ -234,7 +237,11 @@ export default function Sidebar() {
                         </div>
                     </div>
                     <div className="sidebar-footer">
-                        <div className="sidebar-footer-text">Student Organizer v1.0</div>
+                        {profile && <div className="sidebar-footer-text" style={{ marginBottom: '0.35rem', fontWeight: 500 }}>Hi, {profile.first_name}</div>}
+                        <button className="sidebar-signout-btn" onClick={signOut}>
+                            <HiOutlineLogout size={16} />
+                            <span>Sign Out</span>
+                        </button>
                     </div>
                 </>
             )}

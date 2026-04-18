@@ -1,7 +1,12 @@
 node_modules/
 dist/
 .env
+.env.local
+.env.*.local
 *.sqlite
 uploads/
 .DS_Store
 .vite/
+.claude/
+*.log
+/package-lock.json
