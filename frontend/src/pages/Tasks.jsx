@@ -41,10 +41,6 @@ export default function Tasks() {
         setSubtaskInput('');
     };
 
-    const getSubtasksForTask = (taskId) => {
-        return (subtasks || []).filter(s => s.taskId === taskId);
-    };
-
     const getSubtaskProgress = (taskId) => {
         const subs = getSubtasksForTask(taskId);
         if (subs.length === 0) return null;
