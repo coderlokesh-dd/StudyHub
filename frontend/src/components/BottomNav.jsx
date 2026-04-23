@@ -1,19 +1,13 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineDocumentText, HiOutlineClipboardCheck, HiOutlineChartBar, HiOutlineCog, HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt, HiOutlineCollection, HiOutlineCalendar, HiOutlineArchive } from 'react-icons/hi';
 import { motion } from 'framer-motion';
 import './BottomNav.css';
 
 const navItems = [
-    { to: '/', icon: HiOutlineHome, label: 'Home' },
-    { to: '/notes', icon: HiOutlineDocumentText, label: 'Notes' },
-    { to: '/tasks', icon: HiOutlineClipboardCheck, label: 'Tasks' },
-    { to: '/progress', icon: HiOutlineChartBar, label: 'Stats' },
-    { to: '/storage', icon: HiOutlineFolder, label: 'Storage' },
-    { to: '/vault', icon: HiOutlineArchive, label: 'Vault' },
-    { to: '/study-zone', icon: HiOutlineLightningBolt, label: 'Focus' },
-    { to: '/timetable', icon: HiOutlineCalendar, label: 'Schedule' },
-    { to: '/journal', icon: HiOutlineBookOpen, label: 'Journal' },
-    { to: '/settings', icon: HiOutlineCog, label: 'Settings' },
+    { to: '/', icon: '◉', label: 'HOME' },
+    { to: '/study-zone', icon: '◆', label: 'ZONE' },
+    { to: '/vault', icon: '▣', label: 'VAULT' },
+    { to: '/progress', icon: '≈', label: 'STATS' },
+    { to: '/settings', icon: '◯', label: 'YOU' },
 ];
 
 export default function BottomNav() {
@@ -21,23 +15,19 @@ export default function BottomNav() {
 
     return (
         <nav className="bottom-nav" id="bottom-nav">
-            {navItems.map(({ to, icon: Icon, label }) => {
-                const isJournalActive = to === '/journal' && location.pathname.startsWith('/journal');
+            {navItems.map(({ to, icon, label }) => {
                 return (
-                    <NavLink key={to} to={to} className={({ isActive }) => `bottom-nav-item ${isActive || isJournalActive ? 'active' : ''}`} end={to === '/'}>
+                    <NavLink key={to} to={to} className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`} end={to === '/'}>
                         {({ isActive }) => (
                             <>
                                 <div className="bottom-nav-icon-wrap">
-                                    <Icon size={22} />
-                                    {(isActive || isJournalActive) && (
-                                        <motion.div
-                                            className="bottom-nav-indicator"
-                                            layoutId="bottomNavIndicator"
-                                            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                                        />
-                                    )}
+                                    <span style={{ fontSize: 22, color: isActive ? '#0B0B0F' : 'rgba(245,245,250,0.55)' }}>
+                                        {icon}
+                                    </span>
                                 </div>
-                                <span className="bottom-nav-label">{label}</span>
+                                <span className="bottom-nav-label" style={{ color: isActive ? '#0B0B0F' : 'rgba(245,245,250,0.55)' }}>
+                                    {label}
+                                </span>
                             </>
                         )}
                     </NavLink>

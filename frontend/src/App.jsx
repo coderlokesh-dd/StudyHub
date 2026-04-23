@@ -12,7 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Notes from './pages/Notes';
 import Tasks from './pages/Tasks';
 import Progress from './pages/Progress';
-import StudyStorage from './pages/StudyStorage';
+
 import StudyVault from './pages/StudyVault';
 import Journal from './pages/Journal';
 import JournalList from './pages/JournalList';
@@ -43,7 +43,6 @@ export default function App() {
                                     <Route path="/notes" element={<Notes />} />
                                     <Route path="/tasks" element={<Tasks />} />
                                     <Route path="/progress" element={<Progress />} />
-                                    <Route path="/storage" element={<StudyStorage />} />
                                     <Route path="/vault" element={<StudyVault />} />
                                     <Route path="/study-zone" element={<StudyZone />} />
                                     <Route path="/timetable" element={<Timetable />} />

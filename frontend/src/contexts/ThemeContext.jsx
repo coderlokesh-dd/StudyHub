@@ -9,6 +9,7 @@ export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState(() => localStorage.getItem('so-theme') || 'dark');
     const [accent, setAccent] = useState(() => localStorage.getItem('so-accent') || 'purple');
     const [fontSize, setFontSize] = useState(() => localStorage.getItem('so-font-size') || '100');
+    const [tone, setTone] = useState(() => localStorage.getItem('so-tone') || 'gen-z');
 
     useEffect(() => {
         const root = document.documentElement;
@@ -54,7 +55,8 @@ export function ThemeProvider({ children }) {
         localStorage.setItem('so-theme', theme);
         localStorage.setItem('so-accent', accent);
         localStorage.setItem('so-font-size', fontSize);
-    }, [theme, accent, fontSize]);
+        localStorage.setItem('so-tone', tone);
+    }, [theme, accent, fontSize, tone]);
 
     const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
@@ -63,6 +65,7 @@ export function ThemeProvider({ children }) {
             theme, toggleTheme, setTheme,
             accent, setAccent,
             fontSize, setFontSize,
+            tone, setTone,
             ACCENT_COLORS,
             FONT_SIZES
         }}>

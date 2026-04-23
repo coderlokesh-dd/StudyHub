@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash } from 'react-icons/hi';
+import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash, HiOutlineLogout } from 'react-icons/hi';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import './Settings.css';
 
@@ -21,8 +22,9 @@ const accentNames = {
 };
 
 export default function Settings() {
-    const { theme, toggleTheme, accent, setAccent, fontSize, setFontSize, ACCENT_COLORS, FONT_SIZES } = useTheme();
+    const { theme, toggleTheme, accent, setAccent, fontSize, setFontSize, tone, setTone, ACCENT_COLORS, FONT_SIZES } = useTheme();
     const { resetAllData } = useApp();
+    const { signOut } = useAuth();
 
     const handleReset = () => {
         if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
@@ -47,6 +49,37 @@ export default function Settings() {
                     </div>
                     <div className={`toggle-switch ${theme === 'dark' ? 'on' : ''}`}>
                         <motion.div className="toggle-knob" layout transition={{ type: 'spring', stiffness: 500, damping: 30 }} />
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Tone Toggle */}
+            <motion.section className="settings-section card" variants={itemVariants}>
+                <h3 className="settings-section-title">Communication</h3>
+                <div className="setting-row">
+                    <div className="setting-info">
+                        <div>
+                            <span className="setting-label">Tone</span>
+                            <span className="setting-desc">Choose how the app talks to you</span>
+                        </div>
+                    </div>
+                    
+                    <div className="tone-toggle-wrap">
+                        <span className="tone-label">TONE <span style={{opacity:0.3, margin: '0 8px'}}>|</span></span>
+                        <div className="tone-options">
+                            <button 
+                                className={`tone-btn ${tone === 'pro' ? 'active' : ''}`}
+                                onClick={() => setTone('pro')}
+                            >
+                                PRO
+                            </button>
+                            <button 
+                                className={`tone-btn ${tone === 'gen-z' ? 'active' : ''}`}
+                                onClick={() => setTone('gen-z')}
+                            >
+                                GEN-Z
+                            </button>
+                        </div>
                     </div>
                 </div>
             </motion.section>
@@ -126,8 +159,22 @@ export default function Settings() {
             </motion.section>
 
             {/* Danger Zone */}
-            <motion.section className="settings-section card danger" variants={itemVariants}>
-                <h3 className="settings-section-title">Data Management</h3>
+            <motion.section className="settings-section card" variants={itemVariants}>
+                <h3 className="settings-section-title">Account & Data</h3>
+                
+                <div className="setting-row" onClick={signOut} id="signout-btn" style={{ marginBottom: 'var(--space-md)' }}>
+                    <div className="setting-info">
+                        <HiOutlineLogout size={20} style={{ color: '#ef4444' }} />
+                        <div>
+                            <span className="setting-label" style={{ color: '#ef4444' }}>Sign Out</span>
+                            <span className="setting-desc">Log out of your account on this device</span>
+                        </div>
+                    </div>
+                    <span className="reset-arrow" style={{ color: '#ef4444' }}>→</span>
+                </div>
+
+                <div className="setting-divider" style={{ margin: 'var(--space-md) 0', height: '1px', background: 'var(--border-subtle)' }} />
+
                 <div className="setting-row" onClick={handleReset} id="reset-data-btn">
                     <div className="setting-info">
                         <HiOutlineTrash size={20} />

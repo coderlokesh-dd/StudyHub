@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineSearch, HiOutlineStar, HiOutlineTrash, HiOutlinePencil, HiStar } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineSearch, HiOutlineStar, HiOutlineTrash, HiOutlinePencil, HiStar, HiOutlineTag, HiOutlineClock, HiOutlinePencilAlt } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
-import { getCategoryLabel, getCategoryClass, timeAgo } from '../utils/helpers';
+import { useTheme } from '../contexts/ThemeContext';
+import { getCategoryLabel, getCategoryClass, timeAgo, formatDate } from '../utils/helpers';
 import Modal from '../components/Modal';
+import { PageHeader, Chip, PALETTE } from '../components/ComicComponents';
 import './Notes.css';
 
 const cardVariants = {
@@ -14,6 +16,8 @@ const cardVariants = {
 
 export default function Notes() {
     const { notes, subjects, addNote, updateNote, deleteNote, toggleFavorite } = useApp();
+    const { tone } = useTheme();
+    const isPro = tone === 'pro';
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
     const [modalOpen, setModalOpen] = useState(false);
@@ -108,54 +112,65 @@ export default function Notes() {
         deleteNote(id);
     };
 
-    const NoteCard = ({ note }) => (
+    const NoteCard = ({ note, index }) => (
         <motion.div
-            className="note-card card"
             variants={cardVariants}
             layout
-            whileHover={{ y: -4, boxShadow: '0 8px 25px rgba(0,0,0,0.15)' }}
+            whileHover={{ y: -4, boxShadow: '6px 6px 0 #0B0B0F' }}
             whileTap={{ scale: 0.98 }}
             onClick={() => openView(note)}
-            style={{ cursor: 'pointer' }}
+            style={{ 
+                cursor: 'pointer', background: note.favorite ? PALETTE.butter : PALETTE.lavender,
+                border: '3px solid #0B0B0F', boxShadow: '5px 5px 0 #0B0B0F',
+                borderRadius: 14, padding: 16, position: 'relative',
+                transform: index % 3 === 1 ? 'rotate(-0.8deg)' : index % 3 === 2 ? 'rotate(0.6deg)' : 'none',
+                minHeight: 160
+            }}
         >
-            <div className="note-card-header">
-                <span className={`badge ${getCategoryClass(note.category)}`}>{getCategoryLabel(note.category)}</span>
-                <div className="note-card-actions">
-                    <button className="btn-icon" onClick={(e) => { e.stopPropagation(); toggleFavorite(note.id); }} title="Favorite">
-                        {note.favorite ? <HiStar size={18} color="var(--accent)" /> : <HiOutlineStar size={18} />}
-                    </button>
-                    <button className="btn-icon" onClick={(e) => { e.stopPropagation(); openEdit(note); }} title="Edit">
-                        <HiOutlinePencil size={16} />
-                    </button>
-                    <button className="btn-icon" onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }} title="Delete">
-                        <HiOutlineTrash size={16} />
-                    </button>
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(11,11,15,0.08) 1px, transparent 1.5px)', backgroundSize: '10px 10px', pointerEvents: 'none', borderRadius: 10 }} />
+            <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Chip color="#FFF8EA">{getCategoryLabel(note.category).toUpperCase()}</Chip>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                        <button className="btn-icon" style={{ width: 28, height: 28, background: 'transparent', border: 'none', boxShadow: 'none' }} onClick={(e) => { e.stopPropagation(); toggleFavorite(note.id); }}>
+                            {note.favorite ? <HiStar size={22} color="#0B0B0F" /> : <HiOutlineStar size={22} color="#0B0B0F" />}
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <h4 className="note-card-title">{note.title}</h4>
-            <p className="note-card-content">{note.content.length > 120 ? note.content.slice(0, 120) + '...' : note.content}</p>
-            <div className="note-card-footer">
-                <span className="note-card-time">{timeAgo(note.updatedAt)}</span>
+                <h4 style={{ fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: 18, color: '#0B0B0F', marginBottom: 6, lineHeight: 1.2 }}>{note.title}</h4>
+                <p style={{ fontSize: 13, color: 'rgba(11,11,15,0.75)', lineHeight: 1.45 }}>{note.content.length > 120 ? note.content.slice(0, 120) + '...' : note.content}</p>
+                <div style={{ position: 'absolute', bottom: -6, right: 0, fontFamily: 'Permanent Marker, cursive', fontSize: 13, color: 'rgba(11,11,15,0.55)' }}>
+                    {timeAgo(note.updatedAt)}
+                </div>
             </div>
         </motion.div>
     );
 
     return (
         <div className="page container">
-            {/* Header */}
-            <div className="notes-header">
-                <h1>📝 Notes</h1>
-                <motion.button className="btn btn-primary" onClick={openNew} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} id="add-note-btn">
-                    <HiOutlinePlus size={18} />
-                    <span>New Note</span>
-                </motion.button>
-            </div>
+            <PageHeader 
+                tag={`NOTES · ${notes.length} TOTAL`} 
+                tagColor={PALETTE.lavender}
+                title={isPro ? 'notes' : 'the vault of thoughts'} 
+                subtitle={isPro ? 'Your thoughts, organized.' : 'ur big brain moments. all here.'} 
+                right={
+                    <motion.button 
+                        className="btn btn-primary" 
+                        onClick={openNew} 
+                        whileHover={{ scale: 1.05 }} 
+                        whileTap={{ scale: 0.95 }} 
+                        style={{ fontFamily: isPro ? 'inherit' : 'Bangers, cursive', fontSize: 16, letterSpacing: isPro ? '0' : '0.08em', background: PALETTE.lavender }}
+                    >
+                        + {isPro ? 'NEW NOTE' : 'NEW DROP'}
+                    </motion.button>
+                }
+            />
 
             {/* Search & Filter */}
             <div className="notes-toolbar">
                 <div className="search-wrap">
                     <HiOutlineSearch size={18} className="search-icon" />
-                    <input type="text" placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} id="notes-search" />
+                    <input type="text" placeholder={isPro ? 'Search notes...' : 'find a thought...'} value={search} onChange={e => setSearch(e.target.value)} id="notes-search" />
                 </div>
                 <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="filter-select" id="notes-filter">
                     <option value="all">All Categories</option>
@@ -179,16 +194,16 @@ export default function Notes() {
 
             {/* All Notes */}
             <section>
-                <h3 className="section-title">{favorites.length > 0 ? '📄 Other Notes' : '📄 All Notes'} ({others.length})</h3>
+                <h3 className="section-title" style={{ fontFamily: 'Bangers, cursive', fontSize: 24 }}>{favorites.length > 0 ? 'OTHER NOTES' : 'ALL NOTES'}</h3>
                 {others.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-state-icon">📝</div>
-                        <p>{search ? 'No notes match your search.' : 'No notes yet. Create your first note!'}</p>
+                        <p>{search ? (isPro ? 'No notes match your search.' : 'nothing found bestie') : (isPro ? 'No notes yet. Create your first note!' : 'empty brain... start dropping thoughts!')}</p>
                     </div>
                 ) : (
-                    <motion.div className="notes-grid" layout>
+                    <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }} layout>
                         <AnimatePresence>
-                            {others.map(n => <NoteCard key={n.id} note={n} />)}
+                            {others.map((n, i) => <NoteCard key={n.id} note={n} index={i} />)}
                         </AnimatePresence>
                     </motion.div>
                 )}

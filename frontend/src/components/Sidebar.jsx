@@ -17,7 +17,6 @@ const navItems = [
     { to: '/notes', icon: HiOutlineDocumentText, label: 'Notes' },
     { to: '/tasks', icon: HiOutlineClipboardCheck, label: 'Tasks' },
     { to: '/progress', icon: HiOutlineChartBar, label: 'Progress' },
-    { to: '/storage', icon: HiOutlineFolder, label: 'Study Storage' },
     { to: '/vault', icon: HiOutlineArchive, label: 'Study Vault' },
     { to: '/study-zone', icon: HiOutlineLightningBolt, label: 'Study Zone' },
     { to: '/timetable', icon: HiOutlineCalendar, label: 'Timetable' },
@@ -109,6 +108,11 @@ function ExpandedNavItem({ to, icon: Icon, label, mouseY, isJournalActive }) {
                     )}
                     <Icon size={20} />
                     <span>{label}</span>
+                    {(isActive || isJournalActive) && (
+                        <span className="sidebar-nav-badge">
+                            <span>HERE</span>
+                        </span>
+                    )}
                 </motion.div>
             )}
         </NavLink>
@@ -125,6 +129,13 @@ export default function Sidebar() {
         try { return JSON.parse(localStorage.getItem('sidebar_collapsed')) || false; } catch { return false; }
     });
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [loginHistory, setLoginHistory] = useState(() => {
+        try {
+            return new Set(JSON.parse(localStorage.getItem('studyhub_login_history') || '[]'));
+        } catch {
+            return new Set();
+        }
+    });
 
     // Sync CSS variable with collapsed state
     useEffect(() => {
@@ -139,6 +150,20 @@ export default function Sidebar() {
     };
 
     const journalDates = new Set((journal || []).map(j => j.date));
+
+    useEffect(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        try {
+            const historyArr = JSON.parse(localStorage.getItem('studyhub_login_history') || '[]');
+            if (!historyArr.includes(todayStr)) {
+                historyArr.push(todayStr);
+                localStorage.setItem('studyhub_login_history', JSON.stringify(historyArr));
+                setLoginHistory(new Set(historyArr));
+            }
+        } catch (e) {
+            console.error('Failed to parse login history', e);
+        }
+    }, []);
 
     const generateCalendar = () => {
         const year = currentDate.getFullYear();
@@ -165,8 +190,11 @@ export default function Sidebar() {
             <div className="sidebar-brand">
                 {!collapsed && (
                     <>
-                        <div className="sidebar-logo">📖</div>
-                        <span className="sidebar-title">StudyHub</span>
+                        <div className="sidebar-logo">S</div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className="sidebar-title">STUDYHUB</span>
+                            <span style={{ fontSize: 9, color: 'rgba(245,245,250,0.5)', letterSpacing: '0.15em', fontFamily: 'Space Grotesk, sans-serif' }}>COMIC EDITION</span>
+                        </div>
                     </>
                 )}
                 {!collapsed && (
@@ -224,9 +252,10 @@ export default function Sidebar() {
                             {days.map((day, index) => {
                                 const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
                                 const hasJournal = dateStr && journalDates.has(dateStr);
+                                const isLoggedDay = dateStr && loginHistory.has(dateStr);
                                 return (
                                     <div key={index}
-                                        className={`calendar-day ${day ? 'active' : 'empty'} ${day && isCurrentMonth && day === today.getDate() ? 'today' : ''} ${hasJournal ? 'has-journal' : ''}`}
+                                        className={`calendar-day ${day ? 'active' : 'empty'} ${day && isCurrentMonth && day === today.getDate() ? 'today' : ''} ${isLoggedDay ? 'logged-in' : ''} ${hasJournal ? 'has-journal' : ''}`}
                                         onClick={day && dateStr ? () => navigate(`/journal/${dateStr}`) : undefined}
                                         style={day ? { cursor: 'pointer' } : undefined}>
                                         {day || ''}
@@ -235,13 +264,6 @@ export default function Sidebar() {
                                 );
                             })}
                         </div>
-                    </div>
-                    <div className="sidebar-footer">
-                        {profile && <div className="sidebar-footer-text" style={{ marginBottom: '0.35rem', fontWeight: 500 }}>Hi, {profile.first_name}</div>}
-                        <button className="sidebar-signout-btn" onClick={signOut}>
-                            <HiOutlineLogout size={16} />
-                            <span>Sign Out</span>
-                        </button>
                     </div>
                 </>
             )}

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { HiArrowLeft, HiPlay, HiClock, HiLightningBolt, HiLockClosed } from 'react-icons/hi';
 import { useStudyTimer } from '../contexts/StudyTimerContext';
+import { useTheme } from '../contexts/ThemeContext';
 import GlareHover from '../components/GlareHover';
 import TrueFocus from '../components/TrueFocus';
 import './StudyZone.css';
@@ -27,6 +28,8 @@ const itemVariants = {
 function ModeSelect({ onSelect, isActive }) {
     const [deepHovered, setDeepHovered] = useState(false);
     const [casualHovered, setCasualHovered] = useState(false);
+    const { tone } = useTheme();
+    const isPro = tone === 'pro';
 
     return (
         <motion.div
@@ -36,10 +39,10 @@ function ModeSelect({ onSelect, isActive }) {
             animate="animate"
         >
             <motion.h1 className="sz-main-title" variants={itemVariants}>
-                Study Zone
+                {isPro ? 'Study Zone' : 'the study zone'}
             </motion.h1>
             <motion.p className="sz-subtitle" variants={itemVariants}>
-                {isActive ? 'A study session is in progress. Use the timer in the top-right corner.' : 'Choose your study mode'}
+                {isActive ? (isPro ? 'A study session is in progress.' : 'session in progress bestie.') : (isPro ? 'Choose your study mode' : 'pick your vibe')}
             </motion.p>
 
             {!isActive && (

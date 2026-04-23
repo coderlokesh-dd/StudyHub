@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineTrash, HiOutlineCalendar, HiOutlineCheck, HiChevronDown, HiChevronRight } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineCheck, HiOutlinePencilAlt, HiOutlineTrash, HiOutlineClock, HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineTag } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { formatDate } from '../utils/helpers';
 import Modal from '../components/Modal';
 import './Tasks.css';
@@ -9,7 +10,9 @@ import './Tasks.css';
 const FILTERS = ['all', 'active', 'completed'];
 
 export default function Tasks() {
-    const { tasks, addTask, toggleTask, deleteTask, subtasks, addSubtask, toggleSubtask, deleteSubtask } = useApp();
+    const { tasks, subtasks, addTask, updateTask, deleteTask, toggleTaskStatus, getSubtasksForTask, addSubtask, toggleSubtaskStatus, deleteSubtask } = useApp();
+    const { tone } = useTheme();
+    const isPro = tone === 'pro';
     const [filter, setFilter] = useState('all');
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState({ title: '', subject: '', priority: 'medium', dueDate: '' });
@@ -57,12 +60,12 @@ export default function Tasks() {
             {/* Header */}
             <div className="tasks-header">
                 <div>
-                    <h1>📋 Tasks</h1>
-                    <p className="tasks-subtitle">{activeCount} active · {completedCount} completed</p>
+                    <h1 style={{ fontFamily: isPro ? 'inherit' : 'Bangers, cursive', letterSpacing: isPro ? '0' : '0.04em' }}>{isPro ? '📋 Tasks' : 'the to-do era'}</h1>
+                    <p className="tasks-subtitle">{isPro ? 'Manage your action items.' : 'slay this list bestie'} ({activeCount} active · {completedCount} completed)</p>
                 </div>
-                <motion.button className="btn btn-primary" onClick={() => setModalOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} id="add-task-btn">
+                <motion.button className="btn btn-primary" onClick={() => setModalOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} id="add-task-btn" style={{ fontFamily: isPro ? 'inherit' : 'Bangers, cursive', fontSize: 16, letterSpacing: isPro ? '0' : '0.08em' }}>
                     <HiOutlinePlus size={18} />
-                    <span>New Task</span>
+                    <span>{isPro ? 'New Task' : 'ADD MISSION'}</span>
                 </motion.button>
             </div>
 
@@ -85,7 +88,7 @@ export default function Tasks() {
                     {filtered.length === 0 ? (
                         <motion.div className="empty-state" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             <div className="empty-state-icon">✅</div>
-                            <p>{filter === 'completed' ? 'No completed tasks yet.' : filter === 'active' ? 'All tasks done! 🎉' : 'No tasks yet. Add your first task!'}</p>
+                            <p>{filter === 'completed' ? (isPro ? 'No completed tasks yet.' : 'nothing completed yet.') : filter === 'active' ? (isPro ? 'All tasks done! 🎉' : 'crushed it! no tasks left.') : (isPro ? 'No tasks yet. Add your first task!' : 'no missions yet. add one!')}</p>
                         </motion.div>
                     ) : (
                         filtered.map((task, i) => {

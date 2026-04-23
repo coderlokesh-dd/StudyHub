@@ -457,6 +457,23 @@
     border-radius: 8px;
 }
 
+.vault-preview-overlay.is-full-screen {
+    padding: 0;
+}
+
+.vault-preview-container.is-full-screen {
+    max-width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+}
+
+.vault-preview-container.is-full-screen .vault-preview-pdf,
+.vault-preview-container.is-full-screen .vault-preview-img {
+    height: 90vh;
+    max-height: 90vh;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .vault-grid {

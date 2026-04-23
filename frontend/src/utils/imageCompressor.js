@@ -65,7 +65,7 @@ export function compressImage(file, { maxWidth = 1920, maxHeight = 1080, quality
 }
 
 export function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
+    if (!bytes || bytes <= 0 || isNaN(bytes)) return '0 B';
     const units = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
@@ -77,11 +77,15 @@ const ALLOWED_TYPES = [
     'image/jpg',
     'image/png',
     'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 ];
 
 export function validateFile(file, maxSizeMB = 10) {
     if (!ALLOWED_TYPES.includes(file.type)) {
-        return { valid: false, error: `Invalid file type: ${file.type}. Only PDF, JPG, PNG, and WebP are allowed.` };
+        return { valid: false, error: `Invalid file type: ${file.type || 'Unknown'}. Only PDF, JPG, PNG, WebP, Word, and PPT are allowed.` };
     }
     if (file.size > maxSizeMB * 1024 * 1024) {
         return { valid: false, error: `File too large (${formatFileSize(file.size)}). Maximum is ${maxSizeMB} MB.` };

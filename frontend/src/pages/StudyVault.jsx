@@ -4,7 +4,7 @@ import {
     HiOutlineFolder, HiOutlineFolderOpen, HiOutlineDocumentText,
     HiOutlinePhotograph, HiOutlineUpload, HiOutlineTrash, HiOutlinePlus,
     HiOutlineChevronRight, HiOutlineDownload, HiOutlineX, HiOutlineEye,
-    HiOutlineArrowLeft, HiOutlineSearch, HiOutlineDatabase,
+    HiOutlineArrowLeft, HiOutlineSearch, HiOutlineDatabase, HiOutlineArrowsExpand,
 } from 'react-icons/hi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +18,10 @@ const FILE_ICONS = {
     'image/jpg': <HiOutlinePhotograph size={22} />,
     'image/png': <HiOutlinePhotograph size={22} />,
     'image/webp': <HiOutlinePhotograph size={22} />,
+    'application/msword': <HiOutlineDocumentText size={22} style={{ color: '#3b82f6' }} />,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': <HiOutlineDocumentText size={22} style={{ color: '#3b82f6' }} />,
+    'application/vnd.ms-powerpoint': <HiOutlinePhotograph size={22} style={{ color: '#f97316' }} />,
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': <HiOutlinePhotograph size={22} style={{ color: '#f97316' }} />,
 };
 
 const itemVariants = {
@@ -42,6 +46,7 @@ export default function StudyVault() {
     const [addSubjectOpen, setAddSubjectOpen] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [previewFile, setPreviewFile] = useState(null);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Upload
     const [uploading, setUploading] = useState(false);
@@ -447,7 +452,7 @@ export default function StudyVault() {
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept=".pdf,.jpg,.jpeg,.png,.webp"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.ppt,.pptx"
                             onChange={(e) => handleFiles(Array.from(e.target.files))}
                             hidden
                         />
@@ -460,7 +465,7 @@ export default function StudyVault() {
                             <>
                                 <HiOutlineUpload size={28} />
                                 <span>Drop files here or click to upload</span>
-                                <span className="vault-dropzone-hint">PDF, JPG, PNG, WebP (max 10 MB)</span>
+                                <span className="vault-dropzone-hint">PDF, DOCX, PPTX, JPG, PNG (max 10 MB)</span>
                             </>
                         )}
                     </div>
@@ -557,14 +562,14 @@ export default function StudyVault() {
             <AnimatePresence>
                 {previewFile && (
                     <motion.div
-                        className="vault-preview-overlay"
+                        className={`vault-preview-overlay ${isFullScreen ? 'is-full-screen' : ''}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setPreviewFile(null)}
+                        onClick={() => { setPreviewFile(null); setIsFullScreen(false); }}
                     >
                         <motion.div
-                            className="vault-preview-container"
+                            className={`vault-preview-container ${isFullScreen ? 'is-full-screen' : ''}`}
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
@@ -573,10 +578,13 @@ export default function StudyVault() {
                             <div className="vault-preview-header">
                                 <span className="vault-preview-title">{previewFile.file_name}</span>
                                 <div className="vault-preview-actions">
+                                    <button onClick={() => setIsFullScreen(!isFullScreen)}>
+                                        <HiOutlineArrowsExpand size={18} />
+                                    </button>
                                     <button onClick={() => handleDownload(previewFile)}>
                                         <HiOutlineDownload size={18} />
                                     </button>
-                                    <button onClick={() => setPreviewFile(null)}>
+                                    <button onClick={() => { setPreviewFile(null); setIsFullScreen(false); }}>
                                         <HiOutlineX size={18} />
                                     </button>
                                 </div>
@@ -588,13 +596,33 @@ export default function StudyVault() {
                                         title={previewFile.file_name}
                                         className="vault-preview-pdf"
                                     />
-                                ) : (
+                                ) : previewFile.file_type.startsWith('image/') ? (
                                     <img
                                         src={previewFile.signedUrl}
                                         alt={previewFile.file_name}
                                         className="vault-preview-img"
                                         loading="lazy"
                                     />
+                                ) : previewFile.file_type.includes('word') || previewFile.file_type.includes('powerpoint') || previewFile.file_type.includes('msword') || previewFile.file_type.includes('presentation') ? (
+                                    <iframe
+                                        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewFile.signedUrl)}`}
+                                        title={previewFile.file_name}
+                                        className="vault-preview-pdf"
+                                        frameBorder="0"
+                                    />
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+                                        <HiOutlineDocumentText size={64} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                                        <h3 style={{ fontFamily: 'Bangers, cursive', fontSize: 24, letterSpacing: '0.05em', color: 'var(--text-primary)', marginBottom: '8px' }}>Preview Not Available</h3>
+                                        <p style={{ fontFamily: 'Space Grotesk', fontSize: 14 }}>This file type cannot be previewed in the browser.</p>
+                                        <button 
+                                            onClick={() => handleDownload(previewFile)}
+                                            style={{ marginTop: '20px', padding: '10px 20px', background: 'var(--butter)', color: 'var(--ink)', border: '2px solid var(--ink)', borderRadius: '10px', fontFamily: 'Bangers, cursive', fontSize: 18, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}
+                                        >
+                                            <HiOutlineDownload size={18} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: '6px' }} />
+                                            Download File
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </motion.div>

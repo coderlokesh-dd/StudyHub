@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiArrowLeft, HiOutlineTrash } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineX } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { PageHeader, PALETTE, ComicCardDark } from '../components/ComicComponents';
 import './Journal.css';
 
 const MOODS = [
@@ -26,6 +28,8 @@ export default function Journal() {
     const { date } = useParams();
     const navigate = useNavigate();
     const { getJournalEntry, saveJournalEntry, deleteJournalEntry } = useApp();
+    const { tone } = useTheme();
+    const isPro = tone === 'pro';
     const textareaRef = useRef(null);
 
     const [title, setTitle] = useState('');
@@ -83,7 +87,7 @@ export default function Journal() {
     };
 
     const handleDelete = () => {
-        if (window.confirm('Delete this journal entry? This cannot be undone.')) {
+        if (window.confirm(isPro ? 'Delete this journal entry? This cannot be undone.' : 'delete this entry? no turning back!')) {
             deleteJournalEntry(date);
             navigate('/journal');
         }
@@ -97,24 +101,16 @@ export default function Journal() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <div className="journal-header">
-                    <motion.button
-                        className="btn btn-ghost journal-back"
-                        onClick={() => navigate('/journal')}
-                        whileHover={{ x: -3 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <HiArrowLeft size={20} />
-                        <span>Back</span>
-                    </motion.button>
-                    <h1 className="journal-page-title">📔 Daily Journal</h1>
-                    <div style={{ width: 90 }} />
-                </div>
+                <PageHeader 
+                    tagColor={PALETTE.coral}
+                    title={isPro ? 'Journal' : 'diary era'} 
+                    subtitle={isPro ? 'Reflect on your day.' : 'spill the tea (to urself)'} 
+                />
                 <div className="journal-future-block">
                     <div className="future-icon">🔮</div>
-                    <h2>The future awaits!</h2>
+                    <h2>{isPro ? 'The future awaits!' : 'future vibes only!'}</h2>
                     <p className="future-date">{formattedDate}</p>
-                    <p>Journal entries cannot be created for future dates. Come back on this day to write your entry.</p>
+                    <p>{isPro ? 'Journal entries cannot be created for future dates. Come back on this day to write your entry.' : 'cant write in the future yet. wait for this day to spill!'}</p>
                 </div>
             </motion.div>
         );
@@ -129,24 +125,20 @@ export default function Journal() {
         >
             {/* Header */}
             <motion.div className="journal-header" variants={itemVariants}>
-                <motion.button
-                    className="btn btn-ghost journal-back"
-                    onClick={() => navigate('/journal')}
-                    whileHover={{ x: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <HiArrowLeft size={20} />
-                    <span>Back</span>
-                </motion.button>
-                <h1 className="journal-page-title">📔 Daily Journal</h1>
+                <PageHeader 
+                    tagColor={PALETTE.coral}
+                    title={isPro ? 'Journal' : 'diary era'} 
+                    subtitle={isPro ? 'Reflect on your day.' : 'spill the tea (to urself)'} 
+                />
                 <motion.button
                     className={`btn btn-primary journal-save ${saved ? 'saved' : ''}`}
                     onClick={handleSave}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     id="journal-save-btn"
+                    style={{ fontFamily: isPro ? 'inherit' : 'Bangers, cursive' }}
                 >
-                    {saved ? '✓ Saved' : 'Save'}
+                    {saved ? (isPro ? '✓ Saved' : '✓ saved!') : (isPro ? 'Save' : 'save it')}
                 </motion.button>
             </motion.div>
 
