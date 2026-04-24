@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineCheck, HiOutlinePencilAlt, HiOutlineTrash, HiOutlineClock, HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineTag } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineCheck, HiOutlinePencilAlt, HiOutlineTrash, HiOutlineClock, HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineChevronRight, HiOutlineTag, HiOutlineCalendar } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDate } from '../utils/helpers';
@@ -10,7 +10,8 @@ import './Tasks.css';
 const FILTERS = ['all', 'active', 'completed'];
 
 export default function Tasks() {
-    const { tasks, subtasks, addTask, updateTask, deleteTask, toggleTaskStatus, getSubtasksForTask, addSubtask, toggleSubtaskStatus, deleteSubtask } = useApp();
+    const { tasks, subtasks, addTask, updateTask, deleteTask, toggleTask, addSubtask, toggleSubtask, deleteSubtask } = useApp();
+    const getSubtasksForTask = (taskId) => subtasks.filter(s => s.taskId === taskId);
     const { tone } = useTheme();
     const isPro = tone === 'pro';
     const [filter, setFilter] = useState('all');
@@ -119,10 +120,12 @@ export default function Tasks() {
                                             <span className={`task-title ${task.completed ? 'done' : ''}`}>{task.title}</span>
                                             <div className="task-meta">
                                                 {task.subject && <span className="task-subject">{task.subject}</span>}
-                                                <span className="task-due">
-                                                    <HiOutlineCalendar size={12} />
-                                                    {formatDate(task.dueDate)}
-                                                </span>
+                                                {task.dueDate && (
+                                                    <span className="task-due">
+                                                        <HiOutlineCalendar size={12} />
+                                                        {formatDate(task.dueDate)}
+                                                    </span>
+                                                )}
                                             </div>
                                             {/* Subtask progress bar */}
                                             {progress && (
@@ -145,7 +148,7 @@ export default function Tasks() {
                                         </span>
 
                                         <button className="btn-icon task-expand" onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}>
-                                            {isExpanded ? <HiChevronDown size={16} /> : <HiChevronRight size={16} />}
+                                            {isExpanded ? <HiOutlineChevronDown size={16} /> : <HiOutlineChevronRight size={16} />}
                                         </button>
 
                                         <button className="btn-icon task-delete" onClick={() => deleteTask(task.id)} title="Delete">

@@ -1,16 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     HiOutlineMail, HiOutlineLockClosed, HiOutlineUser, HiOutlinePhone,
     HiOutlineCalendar, HiOutlineAcademicCap, HiOutlineLocationMarker,
-    HiOutlineEye, HiOutlineEyeOff, HiOutlineX,
-    HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt,
-    HiOutlineChartBar, HiOutlineClipboardCheck, HiOutlineDocumentText,
-    HiOutlineClock, HiOutlineShieldCheck,
+    HiOutlineEye, HiOutlineEyeOff, HiOutlineX, HiOutlineShieldCheck,
 } from 'react-icons/hi';
 import { useAuth } from '../contexts/AuthContext';
-import ctaHeroImg from '../assets/cta-hero.png';
 import './Landing.css';
 
 /* ───── animation helpers ───── */
@@ -30,51 +26,8 @@ const tabVariants = {
     exit: (d) => ({ x: d < 0 ? 60 : -60, opacity: 0 }),
 };
 
-function Section({ children, className = '', id }) {
-    const ref = useRef(null);
-    const inView = useInView(ref, { once: true, margin: '-80px' });
-    return (
-        <motion.section
-            ref={ref}
-            id={id}
-            className={`lp-section ${className}`}
-            initial="hidden"
-            animate={inView ? 'visible' : 'hidden'}
-            variants={stagger}
-        >
-            {children}
-        </motion.section>
-    );
-}
-
-/* ───── data ───── */
-const FEATURES = [
-    { icon: HiOutlineFolder, title: 'Study Vault', desc: 'Organize notes by semester and subject. Upload, preview, and access files anywhere.' },
-    { icon: HiOutlineBookOpen, title: 'Journal', desc: 'Write daily reflections and track your thoughts with mood logging.' },
-    { icon: HiOutlineLightningBolt, title: 'Study Zone', desc: 'Focus with Pomodoro timer-based deep work sessions.' },
-    { icon: HiOutlineChartBar, title: 'Progress Tracking', desc: 'Visualize your study performance with streaks, charts, and badges.' },
-    { icon: HiOutlineClipboardCheck, title: 'Smart Tasks', desc: 'Manage assignments with priorities, due dates, and subtasks.' },
-    { icon: HiOutlineDocumentText, title: 'Quick Notes', desc: 'Capture ideas instantly with categories and favorites.' },
-];
-
-const PREVIEWS = [
-    { label: 'Dashboard', gradient: 'linear-gradient(135deg, #7c5cff22, #3b82f622)', items: ['Study streak tracker', 'Exam countdown', 'Quick actions', 'Achievement badges'] },
-    { label: 'Study Vault', gradient: 'linear-gradient(135deg, #3b82f622, #06b6d422)', items: ['Semester folders', 'Subject organization', 'PDF & image preview', 'Drag-and-drop upload'] },
-    { label: 'Journal', gradient: 'linear-gradient(135deg, #ec489922, #f59e0b22)', items: ['Daily reflections', 'Mood tracking', 'Calendar view', 'Rich text editor'] },
-    { label: 'Study Zone', gradient: 'linear-gradient(135deg, #10b98122, #7c5cff22)', items: ['Pomodoro timer', 'Session logging', 'Focus mode', 'Study analytics'] },
-];
-
 const SCHOOL_TYPES = ['High School', 'Senior Secondary', 'Undergraduate', 'Postgraduate', 'Diploma / Polytechnic', 'Other'];
 
-/* ───── nav links ───── */
-const NAV_LINKS = [
-    { label: 'Features', href: '#features' },
-    { label: 'Study Vault', href: '#preview' },
-    { label: 'Journal', href: '#preview' },
-    { label: 'Study Zone', href: '#preview' },
-];
-
-/* ───── component ───── */
 export default function Landing() {
     const [authModal, setAuthModal] = useState(null);
     const [tab, setTab] = useState('login');
@@ -83,30 +36,27 @@ export default function Landing() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [scrolled, setScrolled] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [ctaHover, setCtaHover] = useState(null);
-    const { signIn, signUp } = useAuth();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
-    const scrollTo = (href) => {
-        setMobileMenuOpen(false);
-        const id = href.replace('#', '');
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
     const [loginForm, setLoginForm] = useState({ email: '', password: '' });
     const [regForm, setRegForm] = useState({
         firstName: '', lastName: '', username: '', email: '', password: '',
         dob: '', schoolType: '', schoolName: '', address: '', phone: '',
     });
+    const { user, loading: authLoading, signIn, signUp } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate('/', { replace: true });
+        }
+    }, [user, authLoading, navigate]);
+
+    if (authLoading || user) {
+        return (
+            <div className="auth-loading">
+                <div className="auth-loading-spinner" />
+            </div>
+        );
+    }
 
     const openAuth = (mode) => {
         setTab(mode);
@@ -160,27 +110,17 @@ export default function Landing() {
     const updateReg = (f, v) => setRegForm((p) => ({ ...p, [f]: v }));
 
     return (
-        <div className="lp">
+        <div className="lp lp--hero-only">
             {/* BG */}
             <div className="lp-bg">
                 <div className="lp-orb lp-orb--1" />
                 <div className="lp-orb lp-orb--2" />
                 <div className="lp-orb lp-orb--3" />
-                <div className="lp-grid-overlay" />
             </div>
 
-            {/* ══════ NAV ══════ */}
-            <nav className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`}>
+            {/* NAV */}
+            <nav className="lp-nav lp-nav--minimal">
                 <span className="lp-nav-logo">Student Organizer</span>
-
-                <div className="lp-nav-center">
-                    {NAV_LINKS.map((link) => (
-                        <button key={link.label} className="lp-nav-link" onClick={() => scrollTo(link.href)}>
-                            {link.label}
-                        </button>
-                    ))}
-                </div>
-
                 <div className="lp-nav-actions">
                     <button className="lp-nav-link lp-nav-login" onClick={() => openAuth('login')}>Login</button>
                     <motion.button
@@ -192,39 +132,15 @@ export default function Landing() {
                         Get Started
                     </motion.button>
                 </div>
-
-                {/* Mobile hamburger */}
-                <button className="lp-nav-hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
-                    <span className={`lp-hamburger-line ${mobileMenuOpen ? 'open' : ''}`} />
-                    <span className={`lp-hamburger-line ${mobileMenuOpen ? 'open' : ''}`} />
-                    <span className={`lp-hamburger-line ${mobileMenuOpen ? 'open' : ''}`} />
-                </button>
-
-                {/* Mobile dropdown */}
-                <AnimatePresence>
-                    {mobileMenuOpen && (
-                        <motion.div
-                            className="lp-nav-mobile"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {NAV_LINKS.map((link) => (
-                                <button key={link.label} className="lp-nav-mobile-link" onClick={() => scrollTo(link.href)}>
-                                    {link.label}
-                                </button>
-                            ))}
-                            <div className="lp-nav-mobile-divider" />
-                            <button className="lp-nav-mobile-link" onClick={() => { setMobileMenuOpen(false); openAuth('login'); }}>Login</button>
-                            <button className="lp-nav-mobile-link lp-nav-mobile-cta" onClick={() => { setMobileMenuOpen(false); openAuth('register'); }}>Get Started</button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </nav>
 
-            {/* ══════ HERO ══════ */}
-            <Section className="lp-hero">
+            {/* HERO (the full landing page now) */}
+            <motion.section
+                className="lp-hero lp-hero--full"
+                initial="hidden"
+                animate="visible"
+                variants={stagger}
+            >
                 <motion.div className="lp-hero-badge" variants={fadeUp} custom={0}>
                     <HiOutlineShieldCheck size={14} />
                     <span>Free forever for students</span>
@@ -239,7 +155,7 @@ export default function Landing() {
                     <motion.button
                         className="lp-btn lp-btn--primary"
                         onClick={() => openAuth('register')}
-                        whileHover={{ scale: 1.04, boxShadow: '0 0 40px rgba(124,92,255,0.4)' }}
+                        whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                     >
                         Get Started — it's free
@@ -254,157 +170,9 @@ export default function Landing() {
                     </motion.button>
                 </motion.div>
                 <motion.div className="lp-hero-glow" variants={fadeUp} custom={4} />
-            </Section>
+            </motion.section>
 
-            {/* ══════ FEATURES ══════ */}
-            <Section className="lp-features" id="features">
-                <motion.span className="lp-label" variants={fadeUp}>Features</motion.span>
-                <motion.h2 className="lp-heading" variants={fadeUp} custom={1}>
-                    Everything you need to ace your studies
-                </motion.h2>
-                <motion.p className="lp-subheading" variants={fadeUp} custom={2}>
-                    Built by students, for students. Every tool you wish you had.
-                </motion.p>
-                <div className="lp-features-grid">
-                    {FEATURES.map((f, i) => (
-                        <motion.div
-                            key={f.title}
-                            className="lp-feature-card"
-                            variants={fadeUp}
-                            custom={i * 0.5}
-                            whileHover={{ y: -6, borderColor: 'rgba(124,92,255,0.35)' }}
-                        >
-                            <div className="lp-feature-icon">
-                                <f.icon size={22} />
-                            </div>
-                            <h3>{f.title}</h3>
-                            <p>{f.desc}</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* ══════ WHY ══════ */}
-            <Section className="lp-why">
-                <motion.h2 className="lp-why-title" variants={fadeUp}>
-                    Stop feeling lost<br />in your studies.
-                </motion.h2>
-                <motion.p className="lp-why-sub" variants={fadeUp} custom={1}>
-                    Stay organized. Stay focused. Stay ahead.
-                </motion.p>
-                <motion.div className="lp-why-stats" variants={fadeUp} custom={2}>
-                    {[
-                        { icon: HiOutlineClock, val: '10x', label: 'More productive' },
-                        { icon: HiOutlineChartBar, val: '100%', label: 'Free to use' },
-                        { icon: HiOutlineShieldCheck, val: 'Secure', label: 'Your data, your control' },
-                    ].map((s) => (
-                        <div key={s.label} className="lp-why-stat">
-                            <s.icon size={20} />
-                            <span className="lp-why-stat-val">{s.val}</span>
-                            <span className="lp-why-stat-label">{s.label}</span>
-                        </div>
-                    ))}
-                </motion.div>
-            </Section>
-
-            {/* ══════ APP PREVIEW ══════ */}
-            <Section className="lp-preview" id="preview">
-                <motion.span className="lp-label" variants={fadeUp}>Preview</motion.span>
-                <motion.h2 className="lp-heading" variants={fadeUp} custom={1}>
-                    A glimpse of what's inside
-                </motion.h2>
-                <div className="lp-preview-grid">
-                    {PREVIEWS.map((p, i) => (
-                        <motion.div
-                            key={p.label}
-                            className="lp-preview-card"
-                            variants={fadeUp}
-                            custom={i * 0.5}
-                            whileHover={{ y: -5, scale: 1.02 }}
-                            style={{ background: p.gradient }}
-                        >
-                            <h4 className="lp-preview-label">{p.label}</h4>
-                            <ul className="lp-preview-list">
-                                {p.items.map((item) => (
-                                    <li key={item}><span className="lp-preview-dot" />{item}</li>
-                                ))}
-                            </ul>
-                        </motion.div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* ══════ CTA HERO ══════ */}
-            <Section className={`lp-cta-hero ${ctaHover === 'login' ? 'lp-cta-hero--blue' : ctaHover === 'register' ? 'lp-cta-hero--red' : ''}`}>
-                <div className="lp-cta-hero-glow" />
-                <motion.div className="lp-cta-hero-wrapper" variants={fadeUp}>
-                    <img
-                        src={ctaHeroImg}
-                        alt="Choose your path"
-                        className="lp-cta-hero-img"
-                    />
-                    <div className="lp-cta-hero-buttons">
-                        <motion.button
-                            className="lp-cta-pill lp-cta-pill--left"
-                            onClick={() => openAuth('login')}
-                            onMouseEnter={() => setCtaHover('login')}
-                            onMouseLeave={() => setCtaHover(null)}
-                            whileHover={{ boxShadow: '0 0 35px rgba(59,130,246,0.6)' }}
-                            style={{ transform: 'translate(-50%, -50%)' }}
-                        >
-                            Login
-                        </motion.button>
-                        <motion.button
-                            className="lp-cta-pill lp-cta-pill--right"
-                            onClick={() => openAuth('register')}
-                            onMouseEnter={() => setCtaHover('register')}
-                            onMouseLeave={() => setCtaHover(null)}
-                            whileHover={{ boxShadow: '0 0 35px rgba(239,68,68,0.6)' }}
-                            style={{ transform: 'translate(-50%, -50%)' }}
-                        >
-                            Create Account
-                        </motion.button>
-                    </div>
-                </motion.div>
-            </Section>
-
-            {/* ══════ FOOTER ══════ */}
-            <footer className="lp-footer">
-                <div className="lp-footer-inner">
-                    <div className="lp-footer-brand">
-                        <span className="lp-footer-logo">Student Organizer</span>
-                        <p className="lp-footer-desc">
-                            Your all-in-one study companion. Organize notes, track progress, and stay focused.
-                        </p>
-                    </div>
-
-                    <div className="lp-footer-col">
-                        <h4 className="lp-footer-heading">Product</h4>
-                        <button onClick={() => scrollTo('#features')}>Features</button>
-                        <button onClick={() => scrollTo('#preview')}>Study Vault</button>
-                        <button onClick={() => scrollTo('#preview')}>Journal</button>
-                        <button onClick={() => scrollTo('#preview')}>Study Zone</button>
-                    </div>
-
-                    <div className="lp-footer-col">
-                        <h4 className="lp-footer-heading">Resources</h4>
-                        <button onClick={() => openAuth('register')}>Get Started</button>
-                        <button onClick={() => openAuth('login')}>Login</button>
-                    </div>
-
-                    <div className="lp-footer-col">
-                        <h4 className="lp-footer-heading">About</h4>
-                        <span className="lp-footer-text">Built for students,</span>
-                        <span className="lp-footer-text">by students.</span>
-                    </div>
-                </div>
-
-                <div className="lp-footer-bottom">
-                    <span>&copy; 2026 Student Organizer. All rights reserved.</span>
-                </div>
-            </footer>
-
-            {/* ══════ AUTH MODAL ══════ */}
+            {/* AUTH MODAL */}
             <AnimatePresence>
                 {authModal && (
                     <motion.div

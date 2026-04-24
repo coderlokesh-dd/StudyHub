@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineX } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineX, HiOutlineTrash } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { PageHeader, PALETTE, ComicCardDark } from '../components/ComicComponents';
