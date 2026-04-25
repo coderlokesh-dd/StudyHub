@@ -60,6 +60,9 @@ async function initializeDatabase(client, release) {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        // Add share_token for downloadable share links (idempotent)
+        await client.query(`ALTER TABLE notes ADD COLUMN IF NOT EXISTS share_token VARCHAR(255) UNIQUE`);
+
         // Create Tasks Table
         await client.query(`CREATE TABLE IF NOT EXISTS tasks (
             id VARCHAR(255) PRIMARY KEY,

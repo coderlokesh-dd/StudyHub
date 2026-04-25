@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineSearch, HiOutlineStar, HiOutlineTrash, HiOutlinePencil, HiStar, HiOutlineTag, HiOutlineClock, HiOutlinePencilAlt } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineSearch, HiOutlineStar, HiOutlineTrash, HiOutlinePencil, HiStar, HiOutlineTag, HiOutlineClock, HiOutlinePencilAlt, HiOutlineShare } from 'react-icons/hi';
 import { useApp } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { getCategoryLabel, getCategoryClass, timeAgo, formatDate } from '../utils/helpers';
 import Modal from '../components/Modal';
+import ShareModal from '../components/ShareModal';
 import { PageHeader, Chip, PALETTE } from '../components/ComicComponents';
+import * as api from '../utils/api';
 import './Notes.css';
 
 const cardVariants = {
@@ -27,6 +29,45 @@ export default function Notes() {
     const [customCategory, setCustomCategory] = useState('');
     const [isCustom, setIsCustom] = useState(false);
     const textareaRef = useRef(null);
+
+    // Share state
+    const [shareOpen, setShareOpen] = useState(false);
+    const [shareTargetId, setShareTargetId] = useState(null);
+    const [shareUrl, setShareUrl] = useState('');
+    const [shareLoading, setShareLoading] = useState(false);
+    const [shareError, setShareError] = useState(null);
+    const [shareRevoking, setShareRevoking] = useState(false);
+
+    const handleShare = async (note) => {
+        setShareTargetId(note.id);
+        setShareUrl('');
+        setShareError(null);
+        setShareLoading(true);
+        setShareOpen(true);
+        try {
+            const { share_token } = await api.shareNote(note.id);
+            setShareUrl(api.buildNoteShareUrl(share_token));
+        } catch (err) {
+            setShareError(err.message || 'Could not generate share link.');
+        } finally {
+            setShareLoading(false);
+        }
+    };
+
+    const handleRevoke = async () => {
+        if (!shareTargetId) return;
+        setShareRevoking(true);
+        try {
+            await api.unshareNote(shareTargetId);
+            setShareOpen(false);
+            setShareUrl('');
+            setShareTargetId(null);
+        } catch (err) {
+            setShareError(err.message || 'Could not revoke link.');
+        } finally {
+            setShareRevoking(false);
+        }
+    };
 
     // Build category options: "General" + subjects from Study Vault + "Custom..."
     const subjectOptions = (subjects || []).map(s => s.title);
@@ -222,6 +263,16 @@ export default function Notes() {
                         </div>
                         <div className="form-actions">
                             <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Close</button>
+                            <motion.button
+                                className="btn btn-ghost"
+                                onClick={() => handleShare(viewingNote)}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                style={{ background: 'var(--mint, #B8F2D8)', color: 'var(--ink, #0B0B0F)', border: '2px solid var(--ink, #0B0B0F)' }}
+                            >
+                                <HiOutlineShare size={18} style={{ marginRight: '8px' }} />
+                                Share
+                            </motion.button>
                             <motion.button className="btn btn-primary" onClick={() => openEdit(viewingNote)} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                                 <HiOutlinePencil size={18} style={{ marginRight: '8px' }} />
                                 Edit Note
@@ -281,6 +332,19 @@ export default function Notes() {
                     </>
                 )}
             </Modal>
+
+            <ShareModal
+                open={shareOpen}
+                onClose={() => setShareOpen(false)}
+                title="Share this note"
+                subtitle="Anyone with the link will be able to download this note as a .txt file."
+                url={shareUrl}
+                loading={shareLoading}
+                error={shareError}
+                meta="Link works until you revoke it. Revoking instantly disables the download."
+                onRevoke={handleRevoke}
+                revoking={shareRevoking}
+            />
         </div>
     );
 }

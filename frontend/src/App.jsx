@@ -8,6 +8,9 @@ import Layout from './components/Layout';
 import CustomCursor from './components/CustomCursor';
 import FloatingTimer from './components/FloatingTimer';
 import Landing from './pages/Landing';
+import Credits from './pages/Credits';
+import Legal from './pages/Legal';
+import Roadmap from './pages/Roadmap';
 import Dashboard from './pages/Dashboard';
 import Notes from './pages/Notes';
 import Tasks from './pages/Tasks';
@@ -33,6 +36,13 @@ export default function App() {
                                 {/* Public routes */}
                                 <Route path="/" element={<Landing />} />
                                 <Route path="/landing" element={<Navigate to="/" replace />} />
+                                <Route path="/credits" element={<Credits />} />
+                                <Route path="/legal" element={<Legal />} />
+                                <Route path="/privacy" element={<Navigate to="/legal#privacy" replace />} />
+                                <Route path="/terms" element={<Navigate to="/legal#terms" replace />} />
+                                <Route path="/roadmap" element={<Roadmap />} />
+                                <Route path="/changelog" element={<Navigate to="/roadmap#changelog" replace />} />
+                                <Route path="/contact" element={<Navigate to="/credits#contact" replace />} />
 
                                 {/* Protected routes */}
                                 <Route element={

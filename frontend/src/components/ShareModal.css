@@ -1,0 +1,222 @@
+/* ===== SHARE MODAL — comic theme ===== */
+
+.share-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+}
+
+.share-modal {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: var(--paper, #FFF8EA);
+    color: var(--ink, #0B0B0F);
+    border: 4px solid var(--ink, #0B0B0F);
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--ink, #0B0B0F);
+    padding: 1.75rem 1.5rem 1.4rem;
+}
+
+.share-modal-close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    background: var(--coral, #FFB5B5);
+    border: 2px solid var(--ink, #0B0B0F);
+    color: var(--ink, #0B0B0F);
+    padding: 0.35rem;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);
+    display: flex;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.share-modal-close:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink, #0B0B0F); }
+.share-modal-close:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink, #0B0B0F); }
+
+.share-modal-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 0.85rem;
+    background: var(--lavender, #C7B8FF);
+    border: 2.5px solid var(--ink, #0B0B0F);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink, #0B0B0F);
+    transform: rotate(-3deg);
+}
+
+.share-modal-title {
+    text-align: center;
+    font-family: var(--font-heading, 'Bangers', cursive);
+    font-size: 1.65rem;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    color: var(--ink, #0B0B0F);
+    text-transform: lowercase;
+    margin: 0 0 0.35rem;
+}
+
+.share-modal-sub {
+    text-align: center;
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.9rem;
+    color: rgba(11, 11, 15, 0.65);
+    margin: 0 0 1.25rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+/* URL + copy button row */
+.share-modal-url-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+    margin-bottom: 0.85rem;
+}
+
+.share-modal-url {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    border: 2.5px solid var(--ink, #0B0B0F);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink, #0B0B0F);
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    outline: none;
+    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);
+}
+
+.share-modal-url:focus { box-shadow: 3px 3px 0 var(--ink, #0B0B0F); }
+
+.share-modal-copy {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.95rem;
+    background: var(--butter, #FFE89C);
+    border: 2.5px solid var(--ink, #0B0B0F);
+    border-radius: 10px;
+    color: var(--ink, #0B0B0F);
+    font-family: var(--font-heading, 'Bangers', cursive);
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);
+    transition: transform 0.12s, box-shadow 0.12s, background 0.18s;
+    text-transform: uppercase;
+}
+
+.share-modal-copy:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink, #0B0B0F); }
+.share-modal-copy:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink, #0B0B0F); }
+
+.share-modal-copy.is-copied { background: var(--mint, #B8F2D8); }
+
+.share-modal-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.82rem;
+    color: rgba(11, 11, 15, 0.7);
+    background: rgba(11, 11, 15, 0.04);
+    border: 1.5px dashed rgba(11, 11, 15, 0.2);
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.share-modal-meta {
+    margin-top: 0.7rem;
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.78rem;
+    color: rgba(11, 11, 15, 0.55);
+    text-align: center;
+    font-weight: 500;
+}
+
+.share-modal-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: center;
+    padding: 1.5rem 0;
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.95rem;
+    color: rgba(11, 11, 15, 0.7);
+    font-weight: 500;
+}
+
+.share-modal-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2.5px solid rgba(11, 11, 15, 0.2);
+    border-top-color: var(--ink, #0B0B0F);
+    border-radius: 50%;
+    animation: shareSpin 0.7s linear infinite;
+}
+
+@keyframes shareSpin { to { transform: rotate(360deg); } }
+
+.share-modal-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    background: var(--coral, #FFB5B5);
+    border: 2px solid var(--ink, #0B0B0F);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    color: var(--ink, #0B0B0F);
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.45;
+    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);
+    margin-bottom: 0.5rem;
+}
+
+.share-modal-revoke {
+    margin-top: 1rem;
+    width: 100%;
+    background: transparent;
+    border: 2px solid rgba(11, 11, 15, 0.25);
+    border-radius: 10px;
+    padding: 0.55rem;
+    color: rgba(11, 11, 15, 0.7);
+    font-family: var(--font-grotesk, 'Space Grotesk', sans-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.share-modal-revoke:hover:not(:disabled) {
+    border-color: var(--ink, #0B0B0F);
+    color: var(--ink, #0B0B0F);
+    background: rgba(255, 181, 181, 0.25);
+}
+
+.share-modal-revoke:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* small screens */
+@media (max-width: 480px) {
+    .share-modal { padding: 1.5rem 1.25rem 1.25rem; }
+    .share-modal-url-row { flex-direction: column; }
+    .share-modal-copy { padding: 0.55rem; justify-content: center; }
+    .share-modal-url { font-size: 0.78rem; }
+}

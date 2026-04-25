@@ -5,11 +5,13 @@ import {
     HiOutlinePhotograph, HiOutlineUpload, HiOutlineTrash, HiOutlinePlus,
     HiOutlineChevronRight, HiOutlineDownload, HiOutlineX, HiOutlineEye,
     HiOutlineArrowLeft, HiOutlineSearch, HiOutlineDatabase, HiOutlineArrowsExpand,
+    HiOutlineShare,
 } from 'react-icons/hi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { compressImage, validateFile, formatFileSize } from '../utils/imageCompressor';
 import Modal from '../components/Modal';
+import ShareModal from '../components/ShareModal';
 import './StudyVault.css';
 
 const FILE_ICONS = {
@@ -62,6 +64,34 @@ export default function StudyVault() {
 
     // Storage usage
     const [storageUsed, setStorageUsed] = useState(0);
+
+    // Share state
+    const [shareOpen, setShareOpen] = useState(false);
+    const [shareUrl, setShareUrl] = useState('');
+    const [shareLoading, setShareLoading] = useState(false);
+    const [shareError, setShareError] = useState(null);
+
+    const handleShareFile = async (mat) => {
+        setShareUrl('');
+        setShareError(null);
+        setShareLoading(true);
+        setShareOpen(true);
+        try {
+            const THIRTY_DAYS = 60 * 60 * 24 * 30;
+            const { data, error: err } = await supabase.storage
+                .from('study-vault')
+                .createSignedUrl(mat.storage_path, THIRTY_DAYS, { download: mat.file_name });
+            if (err || !data?.signedUrl) {
+                setShareError(err?.message || 'Could not generate share link.');
+            } else {
+                setShareUrl(data.signedUrl);
+            }
+        } catch (err) {
+            setShareError(err.message || 'Could not generate share link.');
+        } finally {
+            setShareLoading(false);
+        }
+    };
 
     // Cache: only fetch once per session
     const hasFetched = useRef(false);
@@ -507,6 +537,9 @@ export default function StudyVault() {
                                         <button onClick={() => handleDownload(mat)} title="Download">
                                             <HiOutlineDownload size={17} />
                                         </button>
+                                        <button onClick={() => handleShareFile(mat)} title="Share">
+                                            <HiOutlineShare size={17} />
+                                        </button>
                                         <button onClick={() => handleDeleteFile(mat)} title="Delete" className="vault-delete-btn">
                                             <HiOutlineTrash size={17} />
                                         </button>
@@ -629,6 +662,17 @@ export default function StudyVault() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <ShareModal
+                open={shareOpen}
+                onClose={() => setShareOpen(false)}
+                title="Share this file"
+                subtitle="Anyone with the link can download this file straight to their device."
+                url={shareUrl}
+                loading={shareLoading}
+                error={shareError}
+                meta="Link works for 30 days. After that, generate a new one."
+            />
         </div>
     );
 }

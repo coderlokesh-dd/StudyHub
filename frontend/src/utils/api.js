@@ -21,6 +21,11 @@ export const createNote = (note) => request('/notes', { method: 'POST', body: JS
 export const updateNote = (id, updates) => request(`/notes/${id}`, { method: 'PUT', body: JSON.stringify(updates) });
 export const deleteNote = (id) => request(`/notes/${id}`, { method: 'DELETE' });
 
+// --- Note sharing (downloadable share links) ---
+export const shareNote = (id) => request(`/notes/${id}/share`, { method: 'POST' });
+export const unshareNote = (id) => request(`/notes/${id}/share`, { method: 'DELETE' });
+export const buildNoteShareUrl = (token) => `${API_BASE}/notes/share/${token}/download`;
+
 // --- Tasks ---
 export const fetchTasks = () => request('/tasks');
 export const createTask = (task) => request('/tasks', { method: 'POST', body: JSON.stringify(task) });

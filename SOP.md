@@ -7,7 +7,7 @@
 
 ## 1. What this app is
 
-Full-stack React + Express web app bundling student productivity tools: Tasks (with subtasks), Notes, Journal, Study Zone (Deep Focus / Pomodoro / Casual timers), Flashcards (Leitner spaced repetition), Timetable, Exam Countdown, Progress charts, Study Vault (file uploads), and Settings.
+Full-stack React + Express web app bundling student productivity tools: Tasks (with subtasks), Notes, Journal, Study Zone (Deep Focus / Pomodoro / Casual timers), Timetable, Exam Countdown, Progress charts, Study Vault (file uploads), and Settings. Flashcards (Leitner spaced repetition) are scaffolded — backend + page file exist but the route is not wired and the feature is not yet shipped.
 
 - **Auth**: Supabase (email + password)
 - **App data**: Express + PostgreSQL backend (`/api/*`)
@@ -137,8 +137,8 @@ Student_organizer/
 | `subtasks` | task_id (FK), title, completed |
 | `notes` | title, content, category, favorite |
 | `journal` | date (UNIQUE), title, content, mood |
-| `flashcard_decks` | title, subject |
-| `flashcards` | deck_id, front, back, box (1–5), next_review |
+| `flashcard_decks` | title, subject (table exists — feature not yet shipped) |
+| `flashcards` | deck_id, front, back, box (1–5), next_review (table exists — feature not yet shipped) |
 | `exams` | title, subject, exam_date, color |
 | `timetable_entries` | title, subject, day_of_week (0–6), start_time, end_time, color, location |
 | `study_sessions` | mode, duration, start_time, end_time, subject |
@@ -169,6 +169,8 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 | `*` | — | Catch-all → `/` |
 
 Auth gate (`frontend/src/components/ProtectedRoute.jsx`): unauthenticated users hitting any protected route are redirected to `/`. Landing.jsx handles the inverse — if a session is found, it pushes the user to `/dashboard`.
+
+**Scaffolded but not routed**: `frontend/src/pages/Flashcards.jsx` + `Flashcards.css` exist on disk and `backend/routes/flashcards.js` is wired in `server.js`, but the page is not registered in `App.jsx` and not linked from Sidebar/BottomNav. To ship: add the route, add the nav entries, then move the upcoming roadmap item to the changelog.
 
 Dev-only auto-login (`AuthContext.jsx`) reads `VITE_DEV_AUTO_LOGIN` from `frontend/.env.development.local`. Set to `true` to skip the form on `npm run dev`; set to `false` to land on `/` (the landing page) like a fresh visitor would.
 

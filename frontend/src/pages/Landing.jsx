@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
     HiOutlineMail, HiOutlineLockClosed, HiOutlineUser, HiOutlinePhone,
     HiOutlineCalendar, HiOutlineAcademicCap, HiOutlineLocationMarker,
     HiOutlineEye, HiOutlineEyeOff, HiOutlineX, HiOutlineShieldCheck,
     HiOutlineClipboardCheck, HiOutlineDocumentText, HiOutlineBookOpen,
-    HiOutlineLightningBolt, HiOutlineCollection, HiOutlineFolder,
+    HiOutlineLightningBolt, HiOutlineFolder,
     HiOutlineChartBar, HiOutlineClock, HiOutlineSparkles, HiOutlineCheck,
     HiOutlineArrowRight, HiOutlineChevronDown, HiOutlineLightBulb,
     HiOutlineMenu, HiOutlineHeart, HiOutlineGlobe,
@@ -65,9 +65,9 @@ const FEATURES = [
         tone: 'mint',
     },
     {
-        icon: HiOutlineCollection,
-        title: 'Flashcards',
-        desc: 'Build decks with Leitner box spaced repetition. Cards graduate as you remember them, resurfacing only when needed.',
+        icon: HiOutlineCalendar,
+        title: 'Timetable',
+        desc: 'Build your weekly schedule with color-coded blocks. See your full week at a glance with location and time details.',
         tone: 'sky',
     },
     {
@@ -80,7 +80,7 @@ const FEATURES = [
 
 const STEPS = [
     { num: '01', title: 'Create your account', desc: 'Sign up free in seconds. No credit card, no trials, no catches.' },
-    { num: '02', title: 'Set up your study life', desc: 'Add tasks, build flashcard decks, drop in your timetable, and import your study materials.' },
+    { num: '02', title: 'Set up your study life', desc: 'Add tasks, drop in your timetable and exam dates, then upload your study materials to the vault.' },
     { num: '03', title: 'Stay focused & track wins', desc: 'Run focus sessions, hit your streaks, and watch your progress grow on the dashboard.' },
 ];
 
@@ -130,14 +130,14 @@ const FAQS = [
     },
     {
         q: 'Can I use it for any subject?',
-        a: 'Absolutely. Tasks, notes, flashcards, and the vault are all subject-tagged so it scales whether you\'re in high school, college, or grad school.',
+        a: 'Absolutely. Tasks, notes, timetable, and the vault are all subject-tagged so it scales whether you\'re in high school, college, or grad school.',
     },
 ];
 
 const FOOTER_LINKS = {
     Product: ['Features', 'How it works', 'Highlights', 'FAQ'],
     Resources: ['Get started', 'Login', 'Roadmap', 'Changelog'],
-    Company: ['About', 'Privacy', 'Terms', 'Contact'],
+    Company: ['Credits', 'Privacy', 'Terms', 'Contact'],
 };
 
 const SCHOOL_TYPES = ['High School', 'Senior Secondary', 'Undergraduate', 'Postgraduate', 'Diploma / Polytechnic', 'Other'];
@@ -332,7 +332,7 @@ export default function Landing() {
                 </motion.h1>
 
                 <motion.p className="lp-hero-sub" variants={fadeUp} custom={2}>
-                    Tasks, notes, journal, flashcards, focus timers, and a study vault — every tool you wish you had,
+                    Tasks, notes, journal, focus timers, timetable, and a study vault — every tool you wish you had,
                     built into one beautifully simple workspace.
                 </motion.p>
 
@@ -571,6 +571,17 @@ export default function Landing() {
                                 }
                                 if (label === 'Login') return <button key={label} onClick={() => openAuth('login')}>{label}</button>;
                                 if (label === 'Get started') return <button key={label} onClick={() => openAuth('register')}>{label}</button>;
+                                const FOOTER_ROUTES = {
+                                    'Credits': '/credits',
+                                    'Privacy': '/legal#privacy',
+                                    'Terms': '/legal#terms',
+                                    'Contact': '/credits#contact',
+                                    'Roadmap': '/roadmap#upcoming',
+                                    'Changelog': '/roadmap#changelog',
+                                };
+                                if (FOOTER_ROUTES[label]) {
+                                    return <Link key={label} to={FOOTER_ROUTES[label]} className="lp-footer-link">{label}</Link>;
+                                }
                                 return <button key={label} type="button">{label}</button>;
                             })}
                         </div>
@@ -579,10 +590,14 @@ export default function Landing() {
 
                 <div className="lp-footer-bottom">
                     <span>© {new Date().getFullYear()} Student Organizer. All rights reserved.</span>
+                    <span className="lp-footer-bottom-mid">
+                        Designed &amp; built by{' '}
+                        <Link to="/credits" className="lp-footer-author">Lokeshwaran S</Link>
+                    </span>
                     <span className="lp-footer-bottom-links">
-                        <button>Privacy</button>
+                        <Link to="/legal#privacy">Privacy</Link>
                         <span>·</span>
-                        <button>Terms</button>
+                        <Link to="/legal#terms">Terms</Link>
                     </span>
                 </div>
             </footer>
