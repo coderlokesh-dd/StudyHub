@@ -1,6 +1,6 @@
 # Student Organizer — Standard Operating Procedure (SOP)
 
-> Last updated: 2026-04-24
+> Last updated: 2026-04-25
 > Purpose: fast reference for running, extending, and deploying the app so new work does not require re-exploring the codebase.
 
 ---
@@ -150,7 +150,31 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 
 ---
 
-## 9. Common dev tasks
+## 9. Routes
+
+| Path | Type | Renders |
+|------|------|---------|
+| `/` | Public | Landing page. If a Supabase session exists, redirects to `/dashboard` |
+| `/landing` | Public | Redirects to `/` (kept as alias for old links / bookmarks) |
+| `/dashboard` | Protected | Dashboard (streak, tasks, exams, badges) |
+| `/notes` | Protected | Notes |
+| `/tasks` | Protected | Tasks |
+| `/journal` | Protected | Journal list |
+| `/journal/:date` | Protected | Single-day journal entry |
+| `/study-zone` | Protected | Study Zone (timers) |
+| `/timetable` | Protected | Timetable |
+| `/progress` | Protected | Progress charts |
+| `/vault` | Protected | Study Vault |
+| `/settings` | Protected | Settings |
+| `*` | — | Catch-all → `/` |
+
+Auth gate (`frontend/src/components/ProtectedRoute.jsx`): unauthenticated users hitting any protected route are redirected to `/`. Landing.jsx handles the inverse — if a session is found, it pushes the user to `/dashboard`.
+
+Dev-only auto-login (`AuthContext.jsx`) reads `VITE_DEV_AUTO_LOGIN` from `frontend/.env.development.local`. Set to `true` to skip the form on `npm run dev`; set to `false` to land on `/` (the landing page) like a fresh visitor would.
+
+---
+
+## 10. Common dev tasks
 
 ### Add a new feature with its own resource
 
@@ -162,8 +186,8 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
    - Add API functions in `frontend/src/utils/api.js`
    - Add state + CRUD functions in `frontend/src/contexts/AppContext.jsx`
    - Create page in `frontend/src/pages/<Feature>.jsx` + sibling `.css`
-   - Register route in `frontend/src/App.jsx` (inside `<ProtectedRoute>` + `<Layout>`)
-   - Add nav entry in `frontend/src/components/Sidebar.jsx` and `BottomNav.jsx`
+   - Register route in `frontend/src/App.jsx` inside the `<ProtectedRoute><Layout /></ProtectedRoute>` block (anything outside is public, like `/`)
+   - Add nav entry in `frontend/src/components/Sidebar.jsx` (and `BottomNav.jsx` if present) — use the route path you registered, e.g. `/my-feature`
 
 ### Add a field to an existing table
 - Add `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` block to `backend/database/database.js`
@@ -175,7 +199,7 @@ Handled at runtime by `ThemeContext`; persisted to localStorage. No code change 
 
 ---
 
-## 10. Deployment
+## 11. Deployment
 
 Both services auto-deploy from the GitHub repo on every push to `main`. To ship a change: commit → push → both Netlify and Render pick it up.
 
@@ -216,7 +240,7 @@ git push origin main
 
 ---
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
@@ -231,7 +255,7 @@ git push origin main
 
 ---
 
-## 12. Known gaps / future work
+## 13. Known gaps / future work
 
 - **Per-user scoping on Express**: routes do not filter by `user_id`. All authenticated users see the same data. Fix: add `user_id UUID` to each table, pass Supabase JWT from frontend, verify on backend, and filter queries.
 - **Uploads dir is local-only**: migrate Multer handlers to Supabase Storage for durability across deploys.
@@ -240,7 +264,7 @@ git push origin main
 
 ---
 
-## 13. Useful commands
+## 14. Useful commands
 
 ```bash
 # Backend
@@ -259,7 +283,7 @@ git log --oneline -10
 
 ---
 
-## 14. Contacts / links
+## 15. Contacts / links
 
 - Supabase dashboard: https://app.supabase.com
 - Netlify dashboard: https://app.netlify.com

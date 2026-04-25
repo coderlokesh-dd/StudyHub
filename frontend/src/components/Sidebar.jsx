@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 
 const navItems = [
-    { to: '/', icon: HiOutlineHome, label: 'Dashboard' },
+    { to: '/dashboard', icon: HiOutlineHome, label: 'Dashboard' },
     { to: '/notes', icon: HiOutlineDocumentText, label: 'Notes' },
     { to: '/tasks', icon: HiOutlineClipboardCheck, label: 'Tasks' },
     { to: '/progress', icon: HiOutlineChartBar, label: 'Progress' },
@@ -47,7 +47,7 @@ function MiniNavItem({ to, icon: Icon, label, mouseY, isJournalActive }) {
     return (
         <NavLink
             to={to}
-            end={to === '/'}
+            end={to === '/dashboard'}
             className={({ isActive }) => `sidebar-dock-item ${isActive || isJournalActive ? 'active' : ''}`}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
@@ -97,7 +97,7 @@ function ExpandedNavItem({ to, icon: Icon, label, mouseY, isJournalActive }) {
     return (
         <NavLink
             to={to}
-            end={to === '/'}
+            end={to === '/dashboard'}
             className={({ isActive }) => `sidebar-link ${isActive || isJournalActive ? 'active' : ''}`}
         >
             {({ isActive }) => (

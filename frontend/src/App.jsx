@@ -30,8 +30,9 @@ export default function App() {
                             <CustomCursor />
                             <FloatingTimer />
                             <Routes>
-                                {/* Public route */}
-                                <Route path="/landing" element={<Landing />} />
+                                {/* Public routes */}
+                                <Route path="/" element={<Landing />} />
+                                <Route path="/landing" element={<Navigate to="/" replace />} />
 
                                 {/* Protected routes */}
                                 <Route element={
@@ -39,7 +40,7 @@ export default function App() {
                                         <Layout />
                                     </ProtectedRoute>
                                 }>
-                                    <Route path="/" element={<Dashboard />} />
+                                    <Route path="/dashboard" element={<Dashboard />} />
                                     <Route path="/notes" element={<Notes />} />
                                     <Route path="/tasks" element={<Tasks />} />
                                     <Route path="/progress" element={<Progress />} />
