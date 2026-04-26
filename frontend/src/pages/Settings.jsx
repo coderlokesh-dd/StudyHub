@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash, HiOutlineLogout } from 'react-icons/hi';
+import { Link } from 'react-router-dom';
+import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash, HiOutlineLogout, HiOutlineHeart } from 'react-icons/hi';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
@@ -191,6 +192,24 @@ export default function Settings() {
             <motion.div className="settings-footer" variants={itemVariants}>
                 <p>Student Organizer v1.0</p>
                 <p>Built with ❤️ for Gen Z students</p>
+
+                <nav className="settings-footer-links" aria-label="Footer links">
+                    <Link to="/credits">Credits</Link>
+                    <span aria-hidden="true">·</span>
+                    <Link to="/legal#privacy">Privacy</Link>
+                    <span aria-hidden="true">·</span>
+                    <Link to="/legal#terms">Terms</Link>
+                    <span aria-hidden="true">·</span>
+                    <Link to="/roadmap">Roadmap</Link>
+                    <span aria-hidden="true">·</span>
+                    <Link to="/credits#contact">Contact</Link>
+                </nav>
+
+                <p className="settings-footer-credit">
+                    <span>Designed &amp; built by</span>
+                    <Link to="/credits">Lokeshwaran S</Link>
+                    <HiOutlineHeart size={12} aria-hidden="true" />
+                </p>
             </motion.div>
         </motion.div>
     );

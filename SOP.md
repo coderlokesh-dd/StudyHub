@@ -1,6 +1,6 @@
 # Student Organizer — Standard Operating Procedure (SOP)
 
-> Last updated: 2026-04-25
+> Last updated: 2026-04-26
 > Purpose: fast reference for running, extending, and deploying the app so new work does not require re-exploring the codebase.
 
 ---
@@ -156,6 +156,13 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 |------|------|---------|
 | `/` | Public | Landing page. If a Supabase session exists, redirects to `/dashboard` |
 | `/landing` | Public | Redirects to `/` (kept as alias for old links / bookmarks) |
+| `/credits` | Public | Credits page (creator profile, interests, tech stack, contact) |
+| `/legal` | Public | Privacy + Terms (anchors `#privacy` and `#terms`) |
+| `/roadmap` | Public | Upcoming + Changelog (anchors `#upcoming` and `#changelog`) |
+| `/privacy` | Public | Redirects → `/legal#privacy` |
+| `/terms` | Public | Redirects → `/legal#terms` |
+| `/changelog` | Public | Redirects → `/roadmap#changelog` |
+| `/contact` | Public | Redirects → `/credits#contact` |
 | `/dashboard` | Protected | Dashboard (streak, tasks, exams, badges) |
 | `/notes` | Protected | Notes |
 | `/tasks` | Protected | Tasks |
@@ -165,7 +172,7 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 | `/timetable` | Protected | Timetable |
 | `/progress` | Protected | Progress charts |
 | `/vault` | Protected | Study Vault |
-| `/settings` | Protected | Settings |
+| `/settings` | Protected | Settings (footer links to Credits / Legal / Roadmap / Contact) |
 | `*` | — | Catch-all → `/` |
 
 Auth gate (`frontend/src/components/ProtectedRoute.jsx`): unauthenticated users hitting any protected route are redirected to `/`. Landing.jsx handles the inverse — if a session is found, it pushes the user to `/dashboard`.

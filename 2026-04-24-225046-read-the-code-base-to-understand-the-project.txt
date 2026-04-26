@@ -1,0 +1,3321 @@
+╭─── Claude Code v2.1.118 ─────────────────────────────────────────────────────╮
+│                                          │ Tips for getting started          │
+│           Welcome back Shailog!          │ Run /init to create a CLAUDE.md … │
+│                                          │ ───────────────────────────────── │
+│                  ▐▛███▜▌                 │ Recent activity                   │
+│                 ▝▜█████▛▘                │ No recent activity                │
+│                   ▘▘ ▝▝                  │                                   │
+│                                          │                                   │
+│    Opus 4.7 (1M context) · Claude Max    │                                   │
+│   ~\OneDrive\Desktop\Student_organizer   │                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+❯ read the code base to understand the project                                  
+
+● I'll explore the codebase to understand the project structure and purpose.
+
+  Searched for 1 pattern, read 4 files, listed 2 directories (ctrl+o to expand)
+
+● I'll explore the codebase to understand the project, following plan-mode rules
+   (read-only, only editing the plan file). Let me load the required tools and
+  launch exploration agents in parallel.
+
+● 2 Explore agents finished (ctrl+o to expand)
+   ├ Explore frontend structure · 25 tool uses · 62.2k tokens
+   │ ⎿  Done
+   └ Explore backend structure · 27 tool uses · 62.7k tokens
+     ⎿  Done
+
+● Here's what the project is, based on exploring the code:
+
+  Student Organizer — Project Overview
+
+  A full-stack React + Express web app that bundles ~10 student productivity
+  tools into one dashboard.
+
+  Stack
+
+  - Frontend: React 18 + Vite, react-router, framer-motion, recharts, Supabase
+  JS (for auth + file vault)
+  - Backend: Node.js + Express 5, PostgreSQL via pg, Multer for uploads
+  - Deploy: Vercel/Netlify for the frontend (SPA rewrites); backend runs
+  standalone on port 5000
+  - Auth: Supabase Auth (email/password) — profiles table + RLS policies in
+  supabase-setup.sql
+
+  Features (by page)
+
+  ┌────────────┬────────────────────────────────────────────────────────────┐
+  │    Page    │                          Purpose                           │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Landing    │ Public sign-up / sign-in                                   │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Dashboard  │ Streak, task count, badges, upcoming exams, total study    │
+  │            │ time                                                       │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Tasks      │ CRUD tasks with priority, due dates, nested subtasks,      │
+  │            │ progress bar                                               │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Notes      │ Categorized notes with favorites, search, tags             │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Journal    │ Daily reflections with mood tracking (one entry per date,  │
+  │            │ upsert)                                                    │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Study Zone │ Three timer modes — Deep Focus (fullscreen), Pomodoro      │
+  │            │ (configurable cycles/breaks), Casual                       │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Flashcards │ Decks + cards with Leitner box spaced repetition (box 1–5, │
+  │            │  next_review date)                                         │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Timetable  │ Weekly grid (Mon–Sun × time slots), color-coded entries    │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Exams      │ Countdown cards with subject/date/color                    │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Progress   │ Charts for weekly hours, subject breakdown, badges         │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Settings   │ Theme, accent color, font-size scaling, tone (genz/pro)    │
+  ├────────────┼────────────────────────────────────────────────────────────┤
+  │ Study      │ File storage (PDFs/images) organized by semester → subject │
+  │ Vault      │  — uses Supabase Storage                                   │
+  └────────────┴────────────────────────────────────────────────────────────┘
+
+  Architecture notes
+
+  - Dual persistence layer: most data goes through the local Express + Postgres
+  backend via frontend/src/utils/api.js (13 tables: tasks, notes, subtasks,
+  journal, flashcards, exams, timetable_entries, study_sessions, study_log,
+  user_data, etc.). Study Vault (semesters/subjects/materials) uses Supabase
+  directly with RLS. Auth is Supabase-only.
+  - Contexts (frontend/src/contexts/): AuthContext (Supabase session),
+  AppContext (all CRUD resources), StudyTimerContext (active session, Pomodoro
+  phases, fullscreen), ThemeContext (persisted to localStorage).
+  - Floating timer: global pill component that survives route changes so a study
+   session keeps running while you browse other pages.
+  - Route structure: App.jsx wraps protected pages in Layout (Sidebar +
+  BottomNav + ProtectedRoute); Landing is the only public route.
+
+  Recent work (from implementation_plan.md + git log)
+
+  The last five features added were Pomodoro, Flashcards, Exam Countdown, Task
+  Subtasks, and Timetable. Current branch is clean on main.
+
+  Gotchas I noticed
+
+  - backend/database.sqlite exists on disk but the backend uses Postgres (pg
+  client with DATABASE_URL). The sqlite file looks like legacy.
+  - supabase-setup.sql defines vault_* tables with RLS — those are used by Study
+   Vault; the other features hit the Express API, which has no per-user
+  filtering in its queries. If multi-user support is a goal, that's a gap.
+
+  Let me know what you'd like to dig into or change.
+
+✻ Cooked for 3m 59s
+
+❯ make a sop document and export it so that it will save the time               
+
+● I'll create a Standard Operating Procedure document at the project root with
+  practical info for future dev work.
+
+● Write(SOP.md)
+  ⎿  Wrote 241 lines to SOP.md
+       2 # Student Organizer — Standard Operating Procedure (SOP)
+       3 > Last updated: 2026-04-24
+         the app so new work does not require re-exploring the codebase. 
+       5 
+       7 ---
+       8 ## 1. What this app is
+      10 Full-stack React + Express web app bundling student productivity
+          tools: Tasks (with subtasks), Notes, Journal, Study Zone (Deep 
+         petition), Timetable, Exam Countdown, Progress charts, Study Vau
+         lt (file uploads), and Settings.
+     … +278 lines (ctrl+o to expand)
+
+● Created SOP.md at the project root. It covers:
+
+  - What the app is + tech stack
+  - First-time setup (deps, Supabase schema, Postgres DB)
+  - Env var templates for backend/.env and frontend/.env
+  - Run locally (two-terminal recipe)
+  - Directory map with file purposes
+  - DB schema — Postgres tables + Supabase tables
+  - Common dev tasks (add a feature, add a field)
+  - Deployment for Vercel + Netlify, plus backend notes
+  - Troubleshooting table for the usual suspects
+  - Known gaps — the big one being that Express routes don't scope by user_id
+  yet
+  - Command cheatsheet
+
+  If you want it as PDF / HTML instead of Markdown, say the word and I'll
+  convert it (pandoc or a headless browser). Or if you want a shorter "cheat
+  sheet" version pinned alongside, I can split it.
+
+✻ Brewed for 1m 13s
+
+❯ the project is depolyed in netlify for frontend and render for backend        
+  through github update the sop.md file                                         
+
+● Update(SOP.md)
+  ⎿  Added 3 lines, removed 2 lines
+      10  Full-stack React + Express web app bundling student productivit
+          y tools: Tasks (with subtasks), Notes, Journal, Study Zone (Dee
+          p Focus / Pomodoro / Casual timers), Flashcards (Leitner spaced
+           repetition), Timetable, Exam Countdown, Progress charts, Study
+           Vault (file uploads), and Settings.
+      11  
+      12  - **Auth**: Supabase (email + password)
+      13 -- **App data**: Local Express + PostgreSQL backend (`/api/*`)  
+      13 +- **App data**: Express + PostgreSQL backend (`/api/*`)        
+      14  - **File storage**: Supabase Storage bucket `study-vault`
+      15 -- **Frontend deploy**: Vercel / Netlify (SPA)                  
+      15 +- **Frontend deploy**: Netlify (auto-deploy from GitHub)       
+      16 +- **Backend deploy**: Render (auto-deploy from GitHub)         
+      17  
+      18  ---
+      19  
+
+● Update(SOP.md)
+  ⎿  Added 2 lines, removed 2 lines
+      23  |-------|-------|
+      24  | Frontend | React 18, Vite 5, react-router-dom, framer-motion,
+           recharts, @supabase/supabase-js |
+      25  | Backend | Node.js, Express 5, `pg` (PostgreSQL client), Multe
+          r (uploads), CORS |
+      26 -| DB | PostgreSQL (app data) + Supabase (auth + vault) |       
+      27 -| Deploy | Vercel (`vercel.json`) or Netlify (`netlify.toml`) f
+         -or frontend; backend self-hosted |                             
+      26 +| DB | PostgreSQL on Render (app data) + Supabase (auth + vault
+         +) |                                                            
+      27 +| Deploy | Netlify (frontend) + Render (backend + Postgres), bo
+         +th auto-deploy from GitHub `main` |                            
+      28  
+      29  ---
+      30  
+
+● Update(SOP.md)
+  ⎿  Added 1 line, removed 1 line
+      76  ```env
+      77  VITE_SUPABASE_URL=https://<your-project>.supabase.co
+      78  VITE_SUPABASE_ANON_KEY=<anon-key>
+      79 -VITE_API_URL=http://localhost:5000   # omit in prod if using Ve
+         -rcel rewrites                                                  
+      79 +VITE_API_URL=http://localhost:5000   # prod: set to Render back
+         +end URL in Netlify env                                         
+      80  ```
+      81  
+      82  ---
+
+● Auto mode lets Claude handle permission prompts automatically — Claude
+   checks each tool call for risky actions and prompt injection before 
+  executing. Actions Claude identifies as safe are executed, while 
+  actions Claude identifies as risky are blocked and Claude may try a 
+  different approach. Ideal for long-running tasks. Sessions are 
+  slightly more expensive. Claude can make mistakes that allow harmful 
+  commands to run, it's recommended to only use in isolated 
+  environments. Shift+Tab to change mode.
+
+● Update(SOP.md)
+  ⎿  Added 34 lines, removed 12 lines
+      177  
+      178  ## 10. Deployment
+      179  
+      180 -### Frontend → Vercel (current config)                        
+      181 -- `vercel.json` builds from repo root: `cd frontend && npm ins
+          -tall && npm run build`                                        
+      182 -- Output: `frontend/dist`                                     
+      183 -- SPA rewrite: all routes → `/index.html`                     
+      184 -- Set env vars in Vercel dashboard: `VITE_SUPABASE_URL`, `VITE
+          -_SUPABASE_ANON_KEY`, `VITE_API_URL`                           
+      180 +Both services auto-deploy from the GitHub repo on every push t
+          +o `main`. To ship a change: commit → push → both Netlify and R
+          +ender pick it up.                                             
+      181  
+      186 -### Frontend → Netlify (alternative)                          
+      187 -- `frontend/netlify.toml` already configured                  
+      188 -- Base dir: `frontend/`, publish: `dist/`                     
+      182 +```bash                                                       
+      183 +git add .                                                     
+      184 +git commit -m "…"                                             
+      185 +git push origin main                                          
+      186 +```                                                           
+      187  
+      190 -### Backend                                                   
+      191 -Not yet deployed in a managed way. Options:                   
+      192 -- Render / Railway / Fly.io — set `DATABASE_URL`, `PORT`, `ALL
+          -OWED_ORIGINS`                                                 
+      193 -- The `uploads/` directory is **ephemeral** on most PaaS — mov
+          -e file storage fully to Supabase before relying on it         
+      188 +### Frontend → Netlify                                        
+      189 +- Config: `frontend/netlify.toml` (base dir `frontend/`, publi
+          +sh `dist/`, build `npm run build`)                            
+      190 +- Netlify site is connected to the GitHub repo; builds trigger
+          + on push to `main`                                            
+      191 +- **Env vars** (Netlify → Site settings → Environment variable
+          +s):                                                           
+      192 +  - `VITE_SUPABASE_URL`                                       
+      193 +  - `VITE_SUPABASE_ANON_KEY`                                  
+      194 +  - `VITE_API_URL` — set to the Render backend URL (e.g. `http
+          +s://student-organizer-api.onrender.com`)                      
+      195 +- SPA fallback: all routes rewrite to `/index.html` (handled b
+          +y `netlify.toml`)                                             
+      196 +- `vercel.json` is present but not used — safe to leave or del
+          +ete                                                           
+      197  
+      198 +### Backend → Render                                          
+      199 +- Render service (Web Service) is connected to the GitHub repo
+      200 +- **Build command**: `cd backend && npm install`              
+      201 +- **Start command**: `cd backend && npm start`                
+      202 +- **Env vars** (Render → Environment):                        
+      203 +  - `DATABASE_URL` — Render Postgres internal URL             
+      204 +  - `PORT` — Render injects this; Express reads `process.env.P
+          +ORT`                                                          
+      205 +  - `ALLOWED_ORIGINS` — Netlify URL (e.g. `https://<site>.netl
+          +ify.app`), comma-separated if multiple                        
+      206 +- **Database**: Render Postgres add-on. Tables bootstrap autom
+          +atically on first boot via `backend/database/database.js`     
+      207 +- **Free tier caveat**: Render free web services sleep after 1
+          +5 min idle — first request after sleep takes ~30s to wake     
+      208 +- **Uploads caveat**: Render's filesystem is **ephemeral** — f
+          +iles written to `backend/uploads/` disappear on redeploy. Migr
+          +ate Multer uploads to Supabase Storage before relying on persi
+          +stence                                                        
+      209 +                                                              
+      210 +### Deploy checklist                                          
+      211 +1. Push to `main`                                             
+      212 +2. Watch Netlify build log (Deploys tab) — confirm green      
+      213 +3. Watch Render build + deploy log — confirm "Live" status    
+      214 +4. Open the Netlify URL, log in, verify API calls hit the Rend
+          +er backend (Network tab)                                      
+      215 +5. If CORS errors: add the Netlify URL to Render's `ALLOWED_OR
+          +IGINS` env var and redeploy                                   
+      216 +                                                              
+      217  ---
+      218  
+      219  ## 11. Troubleshooting
+
+● Update(SOP.md)
+  ⎿  Added 3 lines, removed 1 line
+      220  
+      221  | Symptom | Likely cause | Fix |
+      222  |---------|-------------|-----|
+      223 -| `CORS error` in browser | Backend `ALLOWED_ORIGINS` missing 
+          -frontend URL | Add frontend origin to backend `.env`, restart 
+          -|                                                             
+      223 +| `CORS error` in browser | Backend `ALLOWED_ORIGINS` missing 
+          +frontend URL | Add Netlify URL to Render env var `ALLOWED_ORIG
+          +INS`, redeploy |                                              
+      224 +| First API call takes ~30s | Render free tier cold start | Ex
+          +pected; upgrade Render plan to keep warm, or hit a warm-up end
+          +point on app load |                                           
+      225 +| Deploy didn't trigger on push | Branch mismatch or service p
+          +aused | Check Netlify/Render settings — service connected to c
+          +orrect GitHub repo + `main` branch |                          
+      226  | 401 on Supabase calls | Anon key missing / wrong project | R
+           e-copy from Supabase Settings → API |
+      227  | Tables missing on backend | DB connection failed before boot
+           strap | Check `DATABASE_URL`, that Postgres is running |
+      228  | File upload 413 / fails in prod | Backend `uploads/` not per
+           sisted on PaaS | Switch upload to Supabase Storage |
+
+● Update(SOP.md)
+  ⎿  Added 3 lines, removed 2 lines
+      262  ## 14. Contacts / links
+      263  
+      264  - Supabase dashboard: https://app.supabase.com
+      265 -- Vercel: https://vercel.com/dashboard                        
+      266 -- Repo: local only (no remote noted in recent commits)        
+      265 +- Netlify dashboard: https://app.netlify.com                  
+      266 +- Render dashboard: https://dashboard.render.com              
+      267 +- GitHub repo: source of truth — pushes to `main` trigger both
+          + deploys                                                      
+
+● Updated SOP.md to reflect the actual deployment setup:
+
+  - Section 1 (What this app is): split frontend/backend deploy targets —
+  Netlify and Render, both auto-deploying from GitHub
+  - Section 2 (Tech stack): DB row now says "PostgreSQL on Render"; deploy row
+  updated
+  - Section 5 (env): frontend comment now points VITE_API_URL at the Render
+  backend URL in Netlify
+  - Section 10 (Deployment): rewrote completely — git push origin main flow,
+  Netlify settings (build/env/SPA fallback), Render settings
+  (build/start/env/DB/cold-start/uploads caveats), plus a 5-step post-deploy
+  checklist
+  - Section 11 (Troubleshooting): added rows for Render cold start, silent
+  deploy (branch mismatch), and updated the CORS row to reference Render env
+  vars
+  - Section 14 (Links): swapped Vercel link for Netlify + Render + GitHub
+
+  vercel.json is flagged in the doc as unused-but-harmless. Want me to delete it
+   to avoid future confusion?
+
+✻ Worked for 54s
+
+❯ yesterday i saved a journal and a note it saved but i cant able to see this   
+  shows a empty page https://studyhuub.netlify.app/journal/2026-04-23           
+
+● Let me investigate the journal routing and fetching logic.
+  Searched for 2 patterns, read 4 files (ctrl+o to expand)
+
+● Found the bug. Journal.jsx uses <HiOutlineTrash /> on line 213 but only
+  imports HiOutlinePlus, HiOutlineX on line 4. When an existing entry loads,
+  isExisting becomes true, the delete button tries to render, and HiOutlineTrash
+   is not defined throws — giving you a blank page.
+
+  Let me check the AppContext to see how getJournalEntry works and confirm
+  before fixing.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Confirmed — the getJournalEntry lookup is fine, the crash is purely the
+  missing icon import. Let me fix it.
+
+● Update(frontend\src\pages\Journal.jsx)
+  ⎿  Added 1 line, removed 1 line
+      1  import { useState, useEffect, useRef } from 'react';
+      2  import { useParams, useNavigate } from 'react-router-dom';
+      3  import { motion, AnimatePresence } from 'framer-motion';
+      4 -import { HiOutlinePlus, HiOutlineX } from 'react-icons/hi';     
+      4 +import { HiOutlinePlus, HiOutlineX, HiOutlineTrash } from 'react
+        +-icons/hi';                                                     
+      5  import { useApp } from '../contexts/AppContext';
+      6  import { useTheme } from '../contexts/ThemeContext';
+      7  import { PageHeader, PALETTE, ComicCardDark } from '../component
+         s/ComicComponents';
+
+● Now about the notes — let me check if there's a similar issue there. You said
+  notes also saved but you can't see them. Where are you looking for the note?
+
+  Read 1 file (ctrl+o to expand)
+
+● Let me scan Notes.jsx fully for any undefined icons:
+
+  Searched for 3 patterns, read 1 file (ctrl+o to expand)
+
+● Notes.jsx imports all match usages — no import crash there. The note issue
+  needs more info.
+
+  Summary of what I found and fixed:
+
+  🐛 Journal bug — fixed
+  frontend/src/pages/Journal.jsx:4 imported HiOutlinePlus, HiOutlineX but the
+  delete button on line 213 uses <HiOutlineTrash>. When you reload a saved
+  journal entry, isExisting becomes true, the delete button tries to render, and
+   React throws HiOutlineTrash is not defined → blank page. I added
+  HiOutlineTrash to the import. After you git push, Netlify will redeploy and
+  /journal/2026-04-23 will render your saved entry.
+
+  🤔 Notes — need more info
+  Notes.jsx has no missing imports, so the page should render. A couple of
+  possibilities:
+
+  1. Did the Notes page itself show blank, or did the page render but your note
+  wasn't in the list?
+  2. Were you on the live site (studyhuub.netlify.app) or localhost?
+  3. Any chance Render's free-tier backend was asleep (cold start ~30s) — the
+  note might have been saved to localStorage via optimistic UI and not to the
+  DB?
+
+  Can you tell me which of those matches, and I'll dig in. In the meantime, to
+  deploy the journal fix:
+
+  git add frontend/src/pages/Journal.jsx
+  git commit -m "Fix missing HiOutlineTrash import crashing Journal page"
+  git push origin main
+
+✻ Crunched for 1m 21s
+
+❯ the landing page doesnt seem like it follows the site theme fix it            
+
+● Let me look at the Landing page and the site's theme/palette to understand
+  what needs to change.
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Now let me look at the "site theme" — ComicComponents and global theme styles
+  to understand what the Landing page should look like.
+
+  Searched for 1 pattern, read 3 files (ctrl+o to expand)
+
+● I see the mismatch clearly: the rest of the app uses a comic/neobrutalist
+  style (pastel palette — lavender/mint/butter/coral, Bangers font, thick black
+  borders, solid offset shadows, halftone dot background), while Landing.css is
+  a generic SaaS glassy dark theme (purple-blue gradients, #7c5cff, thin
+  borders, backdrop blur, Inter font).
+
+  Let me rewrite Landing.css to match the site's comic theme, and tweak a few
+  inline bits in Landing.jsx for consistency.
+
+● Write(frontend\src\pages\Landing.css)
+  ⎿  Added 403 lines, removed 383 lines
+       1  /* ══════════════════════════════════════
+       2 -   LANDING PAGE — SaaS DARK THEME                              
+       2 +   LANDING PAGE — COMIC THEME                                  
+       3 +   (matches the rest of the app: pastel palette,               
+       4 +    heavy black borders, solid-offset shadows,                 
+       5 +    Bangers display font, halftone dots)                       
+       6     ══════════════════════════════════════ */
+       7  
+       8  /* ── base ── */
+       9  .lp {
+      10      min-height: 100vh;
+       8 -    background: #06060b;                                       
+       9 -    color: #fff;                                               
+      11 +    background: var(--bg-primary, #1a1a22);                    
+      12 +    background-image: radial-gradient(circle, rgba(11, 11, 15, 
+         +0.28) 1px, transparent 1.5px);                                 
+      13 +    background-size: 8px 8px;                                  
+      14 +    color: var(--text-primary, #F5F5FA);                       
+      15      position: relative;
+      16      overflow-x: hidden;
+      12 -    font-family: inherit;                                      
+      17 +    font-family: var(--font-body, 'Inter', system-ui, sans-seri
+         +f);                                                            
+      18  }
+      19  
+      15 -/* ── animated background ── */                                
+      20 +/* ── ambient background: soft pastel blobs ── */              
+      21  .lp-bg {
+      22      position: fixed;
+      23      inset: 0;
+     ...
+      28  .lp-orb {
+      29      position: absolute;
+      30      border-radius: 50%;
+      26 -    filter: blur(120px);                                       
+      27 -    opacity: 0.3;                                              
+      28 -    animation: orbDrift 16s ease-in-out infinite;              
+      31 +    filter: blur(130px);                                       
+      32 +    opacity: 0.22;                                             
+      33 +    animation: orbDrift 18s ease-in-out infinite;              
+      34  }
+      35  
+      31 -.lp-orb--1 { width: 600px; height: 600px; background: #7c5cff; 
+         -top: -15%; left: -8%; animation-delay: 0s; }                   
+      32 -.lp-orb--2 { width: 500px; height: 500px; background: #3b82f6; 
+         -bottom: -20%; right: -12%; animation-delay: -5s; }             
+      33 -.lp-orb--3 { width: 350px; height: 350px; background: #ec4899; 
+         -top: 50%; left: 50%; animation-delay: -10s; }                  
+      36 +.lp-orb--1 { width: 620px; height: 620px; background: var(--lav
+         +ender, #C7B8FF); top: -15%; left: -8%; animation-delay: 0s; }  
+      37 +.lp-orb--2 { width: 520px; height: 520px; background: var(--but
+         +ter, #FFE89C); bottom: -20%; right: -12%; animation-delay: -5s;
+         + }                                                             
+      38 +.lp-orb--3 { width: 380px; height: 380px; background: var(--cor
+         +al, #FFB5B5); top: 50%; left: 50%; animation-delay: -10s; }    
+      39  
+      40  @keyframes orbDrift {
+      41      0%, 100% { transform: translate(0, 0) scale(1); }
+     ...
+      44      75% { transform: translate(30px, 20px) scale(1.03); }
+      45  }
+      46  
+      42 -.lp-grid-overlay {                                             
+      43 -    position: absolute;                                        
+      44 -    inset: 0;                                                  
+      45 -    background-image:                                          
+      46 -        linear-gradient(rgba(255,255,255,0.015) 1px, transparen
+         -t 1px),                                                        
+      47 -        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, tra
+         -nsparent 1px);                                                 
+      48 -    background-size: 60px 60px;                                
+      49 -    mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, bla
+         -ck, transparent);                                              
+      50 -    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 
+         -30%, black, transparent);                                      
+      51 -}                                                              
+      47 +.lp-grid-overlay { display: none; }                            
+      48  
+      49  /* ── sections ── */
+      50  .lp-section {
+     ...
+      55      padding: 5rem 1.5rem;
+      56  }
+      57  
+      62 -/* ── nav ── */                                                
+      58 +/* ══════ NAV ══════ */                                        
+      59  .lp-nav {
+      60      position: fixed;
+      61      top: 0;
+     ...
+      67      justify-content: space-between;
+      68      padding: 0.85rem 2.5rem;
+      69      background: transparent;
+      74 -    border-bottom: 1px solid transparent;                      
+      75 -    transition: background 0.35s, border-color 0.35s, backdrop-
+         -filter 0.35s;                                                  
+      70 +    border-bottom: 3px solid transparent;                      
+      71 +    transition: background 0.3s, border-color 0.3s, backdrop-fi
+         +lter 0.3s;                                                     
+      72  }
+      73  
+      74  .lp-nav--scrolled {
+      79 -    background: rgba(6, 6, 11, 0.8);                           
+      80 -    backdrop-filter: blur(20px);                               
+      81 -    -webkit-backdrop-filter: blur(20px);                       
+      82 -    border-bottom-color: rgba(255, 255, 255, 0.05);            
+      75 +    background: rgba(18, 18, 26, 0.85);                        
+      76 +    backdrop-filter: blur(14px);                               
+      77 +    -webkit-backdrop-filter: blur(14px);                       
+      78 +    border-bottom-color: var(--ink, #0B0B0F);                  
+      79  }
+      80  
+      81  .lp-nav-logo {
+      86 -    font-size: 1.05rem;                                        
+      87 -    font-weight: 700;                                          
+      88 -    background: linear-gradient(135deg, #7c5cff, #3b82f6);     
+      89 -    background-clip: text;                                     
+      90 -    -webkit-background-clip: text;                             
+      91 -    -webkit-text-fill-color: transparent;                      
+      92 -    letter-spacing: -0.01em;                                   
+      82 +    font-family: var(--font-heading, 'Bangers', cursive);      
+      83 +    font-size: 1.6rem;                                         
+      84 +    letter-spacing: 0.05em;                                    
+      85 +    color: var(--butter, #FFE89C);                             
+      86 +    text-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+      87      flex-shrink: 0;
+      88 +    /* reset gradient text from old theme */                   
+      89 +    background: none;                                          
+      90 +    -webkit-text-fill-color: initial;                          
+      91  }
+      92  
+      93  .lp-nav-center {
+     ...
+      105  .lp-nav-link {
+      106      background: none;
+      107      border: none;
+      111 -    color: rgba(255, 255, 255, 0.5);                          
+      112 -    font-size: 0.82rem;                                       
+      113 -    font-weight: 500;                                         
+      108 +    color: rgba(245, 245, 250, 0.7);                          
+      109 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      110 +    font-size: 0.9rem;                                        
+      111 +    font-weight: 600;                                         
+      112      cursor: pointer;
+      115 -    padding: 0.4rem 0.7rem;                                   
+      113 +    padding: 0.45rem 0.8rem;                                  
+      114      border-radius: 8px;
+      115      transition: color 0.2s, background 0.2s;
+      116  }
+      117  
+      118  .lp-nav-link:hover {
+      121 -    color: #fff;                                              
+      122 -    background: rgba(255, 255, 255, 0.05);                    
+      119 +    color: var(--butter, #FFE89C);                            
+      120 +    background: rgba(255, 232, 156, 0.08);                    
+      121  }
+      122  
+      123  .lp-nav-login {
+      126 -    color: rgba(255, 255, 255, 0.7);                          
+      127 -    font-weight: 600;                                         
+      124 +    color: #F5F5FA;                                           
+      125 +    font-weight: 700;                                         
+      126  }
+      127  
+      128  .lp-nav-cta {
+      131 -    background: linear-gradient(135deg, #7c5cff, #6246ea);    
+      132 -    color: #fff;                                              
+      133 -    border: none;                                             
+      134 -    padding: 0.45rem 1.15rem;                                 
+      135 -    font-size: 0.82rem;                                       
+      136 -    font-weight: 600;                                         
+      129 +    background: var(--butter, #FFE89C);                       
+      130 +    color: var(--ink, #0B0B0F);                               
+      131 +    border: 2px solid var(--ink, #0B0B0F);                    
+      132 +    padding: 0.5rem 1.1rem;                                   
+      133 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      134 +    font-size: 1rem;                                          
+      135 +    letter-spacing: 0.08em;                                   
+      136      border-radius: 8px;
+      137      cursor: pointer;
+      139 -    letter-spacing: 0.01em;                                   
+      140 -    transition: box-shadow 0.2s;                              
+      138 +    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);                
+      139 +    transition: transform 0.15s, box-shadow 0.15s;            
+      140  }
+      141  
+      143 -.lp-nav-cta:hover {                                           
+      144 -    box-shadow: 0 0 20px rgba(124, 92, 255, 0.3);             
+      145 -}                                                             
+      142 +.lp-nav-cta:hover { transform: translate(-1px, -1px); box-shad
+          +ow: 4px 4px 0 var(--ink, #0B0B0F); }                          
+      143 +.lp-nav-cta:active { transform: translate(2px, 2px); box-shado
+          +w: 1px 1px 0 var(--ink, #0B0B0F); }                           
+      144  
+      145  /* hamburger (mobile) */
+      146  .lp-nav-hamburger {
+     ...
+      156  
+      157  .lp-hamburger-line {
+      158      display: block;
+      161 -    width: 20px;                                              
+      162 -    height: 2px;                                              
+      163 -    background: rgba(255, 255, 255, 0.7);                     
+      159 +    width: 22px;                                              
+      160 +    height: 2.5px;                                            
+      161 +    background: #F5F5FA;                                      
+      162      border-radius: 2px;
+      163      transition: transform 0.25s, opacity 0.25s;
+      164  }
+      165  
+      168 -.lp-hamburger-line.open:nth-child(1) { transform: translateY(6
+          -px) rotate(45deg); }                                          
+      166 +.lp-hamburger-line.open:nth-child(1) { transform: translateY(6
+          +.5px) rotate(45deg); }                                        
+      167  .lp-hamburger-line.open:nth-child(2) { opacity: 0; }
+      170 -.lp-hamburger-line.open:nth-child(3) { transform: translateY(-
+          -6px) rotate(-45deg); }                                        
+      168 +.lp-hamburger-line.open:nth-child(3) { transform: translateY(-
+          +6.5px) rotate(-45deg); }                                      
+      169  
+      170  /* mobile dropdown */
+      171  .lp-nav-mobile {
+     ...
+      173      top: 100%;
+      174      left: 0;
+      175      right: 0;
+      178 -    background: rgba(10, 10, 18, 0.97);                       
+      176 +    background: rgba(18, 18, 26, 0.97);                       
+      177      backdrop-filter: blur(20px);
+      178      -webkit-backdrop-filter: blur(20px);
+      181 -    border-bottom: 1px solid rgba(255, 255, 255, 0.06);       
+      179 +    border-bottom: 3px solid var(--ink, #0B0B0F);             
+      180      padding: 0.75rem 1.25rem 1rem;
+      181      display: flex;
+      182      flex-direction: column;
+     ...
+      186  .lp-nav-mobile-link {
+      187      background: none;
+      188      border: none;
+      191 -    color: rgba(255, 255, 255, 0.6);                          
+      192 -    font-size: 0.88rem;                                       
+      193 -    font-weight: 500;                                         
+      189 +    color: rgba(245, 245, 250, 0.75);                         
+      190 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      191 +    font-size: 0.95rem;                                       
+      192 +    font-weight: 600;                                         
+      193      cursor: pointer;
+      195 -    padding: 0.6rem 0.5rem;                                   
+      194 +    padding: 0.65rem 0.5rem;                                  
+      195      border-radius: 8px;
+      196      text-align: left;
+      197      transition: color 0.2s, background 0.2s;
+      198  }
+      199  
+      201 -.lp-nav-mobile-link:hover {                                   
+      202 -    color: #fff;                                              
+      203 -    background: rgba(255, 255, 255, 0.04);                    
+      204 -}                                                             
+      200 +.lp-nav-mobile-link:hover { color: var(--butter, #FFE89C); bac
+          +kground: rgba(255,232,156,0.06); }                            
+      201  
+      202  .lp-nav-mobile-cta {
+      207 -    color: #7c5cff;                                           
+      208 -    font-weight: 600;                                         
+      203 +    color: var(--ink, #0B0B0F) !important;                    
+      204 +    background: var(--butter, #FFE89C) !important;            
+      205 +    font-family: var(--font-heading, 'Bangers', cursive) !impo
+          +rtant;                                                        
+      206 +    letter-spacing: 0.08em;                                   
+      207 +    border: 2px solid var(--ink, #0B0B0F) !important;         
+      208  }
+      209  
+      210  .lp-nav-mobile-divider {
+      212 -    height: 1px;                                              
+      213 -    background: rgba(255, 255, 255, 0.06);                    
+      211 +    height: 2px;                                              
+      212 +    background: rgba(255, 255, 255, 0.08);                    
+      213      margin: 0.35rem 0;
+      214  }
+      215  
+     ...
+      226  .lp-hero-badge {
+      227      display: inline-flex;
+      228      align-items: center;
+      230 -    gap: 0.4rem;                                              
+      231 -    background: rgba(124, 92, 255, 0.1);                      
+      232 -    border: 1px solid rgba(124, 92, 255, 0.2);                
+      233 -    color: #a78bfa;                                           
+      234 -    padding: 0.3rem 0.85rem;                                  
+      235 -    border-radius: 100px;                                     
+      236 -    font-size: 0.75rem;                                       
+      237 -    font-weight: 500;                                         
+      229 +    gap: 0.45rem;                                             
+      230 +    background: var(--mint, #B8F2D8);                         
+      231 +    border: 2px solid var(--ink, #0B0B0F);                    
+      232 +    color: var(--ink, #0B0B0F);                               
+      233 +    padding: 0.3rem 0.9rem;                                   
+      234 +    border-radius: 8px;                                       
+      235 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      236 +    font-size: 0.85rem;                                       
+      237 +    letter-spacing: 0.1em;                                    
+      238      margin-bottom: 2rem;
+      239 +    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);                
+      240  }
+      241  
+      242  .lp-hero-title {
+      242 -    font-size: clamp(3rem, 8vw, 5.5rem);                      
+      243 -    font-weight: 800;                                         
+      244 -    line-height: 1.05;                                        
+      245 -    letter-spacing: -0.04em;                                  
+      246 -    background: linear-gradient(to bottom, #ffffff 30%, rgba(2
+          -55,255,255,0.4));                                             
+      247 -    background-clip: text;                                    
+      248 -    -webkit-background-clip: text;                            
+      249 -    -webkit-text-fill-color: transparent;                     
+      243 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      244 +    font-size: clamp(3.5rem, 10vw, 6.5rem);                   
+      245 +    font-weight: 400;                                         
+      246 +    line-height: 1;                                           
+      247 +    letter-spacing: 0.03em;                                   
+      248 +    text-transform: lowercase;                                
+      249 +    color: #F5F5FA;                                           
+      250 +    text-shadow: 4px 4px 0 var(--ink, #0B0B0F);               
+      251      margin: 0;
+      252 +    /* wipe gradient text */                                  
+      253 +    background: none;                                         
+      254 +    -webkit-text-fill-color: initial;                         
+      255  }
+      256  
+      257  .lp-hero-sub {
+      258 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      259      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      255 -    color: rgba(255, 255, 255, 0.45);                         
+      256 -    max-width: 500px;                                         
+      260 +    color: rgba(245, 245, 250, 0.7);                          
+      261 +    max-width: 540px;                                         
+      262      margin: 1.25rem auto 0;
+      263      line-height: 1.6;
+      259 -    font-weight: 400;                                         
+      264 +    font-weight: 500;                                         
+      265  }
+      266  
+      267  .lp-hero-btns {
+      268      display: flex;
+      264 -    gap: 0.85rem;                                             
+      269 +    gap: 1rem;                                                
+      270      margin-top: 2.5rem;
+      271      flex-wrap: wrap;
+      272      justify-content: center;
+      273  }
+      274  
+      275  .lp-hero-glow {
+      271 -    width: 400px;                                             
+      276 +    width: 420px;                                             
+      277      height: 200px;
+      273 -    background: radial-gradient(ellipse, rgba(124, 92, 255, 0.
+          -2), transparent 70%);                                         
+      278 +    background: radial-gradient(ellipse, rgba(199, 184, 255, 0
+          +.18), transparent 70%);                                       
+      279      filter: blur(40px);
+      280      margin-top: -2rem;
+      281      pointer-events: none;
+     ...
+      283  
+      284  /* ── buttons ── */
+      285  .lp-btn {
+      281 -    padding: 0.7rem 1.6rem;                                   
+      286 +    padding: 0.8rem 1.8rem;                                   
+      287      border-radius: 10px;
+      283 -    font-size: 0.9rem;                                        
+      284 -    font-weight: 600;                                         
+      288 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      289 +    font-size: 1.05rem;                                       
+      290 +    letter-spacing: 0.08em;                                   
+      291      cursor: pointer;
+      286 -    border: none;                                             
+      287 -    letter-spacing: 0.01em;                                   
+      288 -    transition: box-shadow 0.3s;                              
+      292 +    border: 3px solid var(--ink, #0B0B0F);                    
+      293 +    transition: transform 0.15s, box-shadow 0.15s;            
+      294 +    text-transform: uppercase;                                
+      295  }
+      296  
+      297  .lp-btn--primary {
+      292 -    background: linear-gradient(135deg, #7c5cff, #6246ea);    
+      293 -    color: #fff;                                              
+      294 -    box-shadow: 0 0 20px rgba(124, 92, 255, 0.2);             
+      298 +    background: var(--butter, #FFE89C);                       
+      299 +    color: var(--ink, #0B0B0F);                               
+      300 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      301  }
+      302 +.lp-btn--primary:hover { transform: translate(-1px, -1px); box
+          +-shadow: 5px 5px 0 var(--ink, #0B0B0F); }                     
+      303 +.lp-btn--primary:active { transform: translate(2px, 2px); box-
+          +shadow: 2px 2px 0 var(--ink, #0B0B0F); }                      
+      304  
+      305  .lp-btn--ghost {
+      298 -    background: rgba(255, 255, 255, 0.04);                    
+      299 -    color: rgba(255, 255, 255, 0.7);                          
+      300 -    border: 1px solid rgba(255, 255, 255, 0.1);               
+      306 +    background: var(--lavender, #C7B8FF);                     
+      307 +    color: var(--ink, #0B0B0F);                               
+      308 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      309  }
+      310 +.lp-btn--ghost:hover { transform: translate(-1px, -1px); box-s
+          +hadow: 5px 5px 0 var(--ink, #0B0B0F); }                       
+      311 +.lp-btn--ghost:active { transform: translate(2px, 2px); box-sh
+          +adow: 2px 2px 0 var(--ink, #0B0B0F); }                        
+      312  
+      303 -.lp-btn--ghost:hover {                                        
+      304 -    background: rgba(255, 255, 255, 0.08);                    
+      305 -    color: #fff;                                              
+      306 -}                                                             
+      307 -                                                              
+      308 -.lp-btn--lg {                                                 
+      309 -    padding: 0.85rem 2.25rem;                                 
+      310 -    font-size: 1rem;                                          
+      311 -}                                                             
+      312 -                                                              
+      313  /* ── shared headings ── */
+      314  .lp-label {
+      315      display: inline-block;
+      316 -    font-size: 0.75rem;                                       
+      317 -    font-weight: 600;                                         
+      316 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      317 +    font-size: 0.95rem;                                       
+      318 +    letter-spacing: 0.2em;                                    
+      319      text-transform: uppercase;
+      319 -    letter-spacing: 0.1em;                                    
+      320 -    color: #7c5cff;                                           
+      321 -    margin-bottom: 0.75rem;                                   
+      320 +    color: var(--ink, #0B0B0F);                               
+      321 +    background: var(--mint, #B8F2D8);                         
+      322 +    border: 2px solid var(--ink, #0B0B0F);                    
+      323 +    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);                
+      324 +    padding: 0.2rem 0.7rem;                                   
+      325 +    border-radius: 6px;                                       
+      326 +    margin-bottom: 1rem;                                      
+      327  }
+      328  
+      329  .lp-heading {
+      325 -    font-size: clamp(1.75rem, 4vw, 2.5rem);                   
+      326 -    font-weight: 750;                                         
+      327 -    letter-spacing: -0.03em;                                  
+      328 -    line-height: 1.15;                                        
+      329 -    margin: 0 0 0.6rem;                                       
+      330 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      331 +    font-size: clamp(2rem, 5vw, 3rem);                        
+      332 +    font-weight: 400;                                         
+      333 +    letter-spacing: 0.02em;                                   
+      334 +    line-height: 1.1;                                         
+      335 +    color: #F5F5FA;                                           
+      336 +    text-transform: lowercase;                                
+      337 +    text-shadow: 2px 2px 0 var(--ink, #0B0B0F);               
+      338 +    margin: 0 0 0.8rem;                                       
+      339  }
+      340  
+      341  .lp-subheading {
+      333 -    color: rgba(255, 255, 255, 0.4);                          
+      334 -    font-size: 1rem;                                          
+      335 -    max-width: 550px;                                         
+      342 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      343 +    color: rgba(245, 245, 250, 0.6);                          
+      344 +    font-size: 1.05rem;                                       
+      345 +    max-width: 560px;                                         
+      346      line-height: 1.6;
+      347      margin: 0 0 2.5rem;
+      348  }
+     ...
+      358  .lp-features-grid {
+      359      display: grid;
+      360      grid-template-columns: repeat(3, 1fr);
+      351 -    gap: 1rem;                                                
+      361 +    gap: 1.2rem;                                              
+      362      width: 100%;
+      363  }
+      364  
+      365  .lp-feature-card {
+      366      text-align: left;
+      367      padding: 1.5rem;
+      358 -    background: rgba(255, 255, 255, 0.02);                    
+      359 -    border: 1px solid rgba(255, 255, 255, 0.05);              
+      368 +    background: rgba(24, 24, 34, 0.65);                       
+      369 +    backdrop-filter: blur(10px);                              
+      370 +    border: 3px solid var(--ink, #0B0B0F);                    
+      371      border-radius: 14px;
+      361 -    transition: border-color 0.3s, box-shadow 0.3s, transform 
+          -0.3s;                                                         
+      372 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      373 +    transition: transform 0.2s, box-shadow 0.2s;              
+      374  }
+      375  
+      376 +.lp-feature-card:nth-child(3n+1) { transform: rotate(-0.3deg);
+          + }                                                            
+      377 +.lp-feature-card:nth-child(3n+2) { transform: rotate(0.3deg); 
+          +}                                                             
+      378 +                                                              
+      379  .lp-feature-card:hover {
+      365 -    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);                
+      380 +    transform: translate(-2px, -2px) rotate(0);               
+      381 +    box-shadow: 6px 6px 0 var(--ink, #0B0B0F);                
+      382  }
+      383  
+      384  .lp-feature-icon {
+      369 -    width: 42px;                                              
+      370 -    height: 42px;                                             
+      385 +    width: 46px;                                              
+      386 +    height: 46px;                                             
+      387      display: flex;
+      388      align-items: center;
+      389      justify-content: center;
+      390      border-radius: 10px;
+      375 -    background: rgba(124, 92, 255, 0.1);                      
+      376 -    color: #7c5cff;                                           
+      377 -    margin-bottom: 0.85rem;                                   
+      391 +    border: 2px solid var(--ink, #0B0B0F);                    
+      392 +    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+      393 +    color: var(--ink, #0B0B0F);                               
+      394 +    margin-bottom: 0.95rem;                                   
+      395  }
+      396  
+      397 +/* rotate palette across the 6 feature cards */               
+      398 +.lp-features-grid .lp-feature-card:nth-child(1) .lp-feature-ic
+          +on { background: var(--lavender, #C7B8FF); }                  
+      399 +.lp-features-grid .lp-feature-card:nth-child(2) .lp-feature-ic
+          +on { background: var(--coral, #FFB5B5); }                     
+      400 +.lp-features-grid .lp-feature-card:nth-child(3) .lp-feature-ic
+          +on { background: var(--butter, #FFE89C); }                    
+      401 +.lp-features-grid .lp-feature-card:nth-child(4) .lp-feature-ic
+          +on { background: var(--mint, #B8F2D8); }                      
+      402 +.lp-features-grid .lp-feature-card:nth-child(5) .lp-feature-ic
+          +on { background: var(--sky, #B8D9FF); }                       
+      403 +.lp-features-grid .lp-feature-card:nth-child(6) .lp-feature-ic
+          +on { background: var(--butter, #FFE89C); }                    
+      404 +                                                              
+      405  .lp-feature-card h3 {
+      381 -    font-size: 0.95rem;                                       
+      382 -    font-weight: 650;                                         
+      406 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      407 +    font-size: 1.35rem;                                       
+      408 +    font-weight: 400;                                         
+      409 +    letter-spacing: 0.04em;                                   
+      410      margin: 0 0 0.4rem;
+      384 -    color: #fff;                                              
+      411 +    color: #F5F5FA;                                           
+      412 +    text-transform: lowercase;                                
+      413  }
+      414  
+      415  .lp-feature-card p {
+      388 -    font-size: 0.82rem;                                       
+      389 -    color: rgba(255, 255, 255, 0.4);                          
+      416 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      417 +    font-size: 0.9rem;                                        
+      418 +    color: rgba(245, 245, 250, 0.65);                         
+      419      line-height: 1.55;
+      420      margin: 0;
+      421  }
+     ...
+      429  }
+      430  
+      431  .lp-why-title {
+      403 -    font-size: clamp(2rem, 5vw, 3rem);                        
+      404 -    font-weight: 800;                                         
+      405 -    letter-spacing: -0.035em;                                 
+      406 -    line-height: 1.15;                                        
+      432 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      433 +    font-size: clamp(2.2rem, 6vw, 3.5rem);                    
+      434 +    font-weight: 400;                                         
+      435 +    letter-spacing: 0.02em;                                   
+      436 +    line-height: 1.1;                                         
+      437      margin: 0;
+      408 -    background: linear-gradient(to right, #7c5cff, #3b82f6, #e
+          -c4899);                                                       
+      409 -    background-clip: text;                                    
+      410 -    -webkit-background-clip: text;                            
+      411 -    -webkit-text-fill-color: transparent;                     
+      438 +    color: #F5F5FA;                                           
+      439 +    text-transform: lowercase;                                
+      440 +    text-shadow: 3px 3px 0 var(--ink, #0B0B0F);               
+      441 +    /* wipe old gradient */                                   
+      442 +    background: none;                                         
+      443 +    -webkit-text-fill-color: initial;                         
+      444  }
+      445  
+      446  .lp-why-sub {
+      447 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      448      font-size: 1.1rem;
+      416 -    color: rgba(255, 255, 255, 0.4);                          
+      449 +    color: rgba(245, 245, 250, 0.6);                          
+      450      margin: 1rem 0 2.5rem;
+      418 -    font-weight: 400;                                         
+      451 +    font-weight: 500;                                         
+      452  }
+      453  
+      454  .lp-why-stats {
+      455      display: flex;
+      423 -    gap: 3rem;                                                
+      456 +    gap: 1.25rem;                                             
+      457      flex-wrap: wrap;
+      458      justify-content: center;
+      459  }
+     ...
+      463      flex-direction: column;
+      464      align-items: center;
+      465      gap: 0.35rem;
+      433 -    color: rgba(255, 255, 255, 0.5);                          
+      466 +    padding: 1.25rem 1.6rem;                                  
+      467 +    border: 3px solid var(--ink, #0B0B0F);                    
+      468 +    border-radius: 14px;                                      
+      469 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      470 +    color: var(--ink, #0B0B0F);                               
+      471 +    min-width: 170px;                                         
+      472  }
+      473  
+      436 -.lp-why-stat svg {                                            
+      437 -    color: #7c5cff;                                           
+      438 -}                                                             
+      474 +.lp-why-stats .lp-why-stat:nth-child(1) { background: var(--co
+          +ral, #FFB5B5); }                                              
+      475 +.lp-why-stats .lp-why-stat:nth-child(2) { background: var(--mi
+          +nt, #B8F2D8); }                                               
+      476 +.lp-why-stats .lp-why-stat:nth-child(3) { background: var(--bu
+          +tter, #FFE89C); }                                             
+      477  
+      478 +.lp-why-stat svg { color: var(--ink, #0B0B0F); }              
+      479 +                                                              
+      480  .lp-why-stat-val {
+      441 -    font-size: 1.8rem;                                        
+      442 -    font-weight: 800;                                         
+      443 -    color: #fff;                                              
+      444 -    letter-spacing: -0.03em;                                  
+      481 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      482 +    font-size: 2.2rem;                                        
+      483 +    font-weight: 400;                                         
+      484 +    letter-spacing: 0.02em;                                   
+      485 +    color: var(--ink, #0B0B0F);                               
+      486  }
+      487  
+      488  .lp-why-stat-label {
+      448 -    font-size: 0.8rem;                                        
+      489 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      490 +    font-size: 0.85rem;                                       
+      491 +    font-weight: 600;                                         
+      492 +    color: rgba(11, 11, 15, 0.75);                            
+      493  }
+      494  
+      495  /* ══════ PREVIEW ══════ */
+     ...
+      503  .lp-preview-grid {
+      504      display: grid;
+      505      grid-template-columns: repeat(2, 1fr);
+      462 -    gap: 1rem;                                                
+      506 +    gap: 1.2rem;                                              
+      507      width: 100%;
+      508  }
+      509  
+      510  .lp-preview-card {
+      511      text-align: left;
+      512      padding: 1.75rem;
+      469 -    border: 1px solid rgba(255, 255, 255, 0.06);              
+      513 +    border: 3px solid var(--ink, #0B0B0F);                    
+      514      border-radius: 16px;
+      471 -    backdrop-filter: blur(10px);                              
+      472 -    -webkit-backdrop-filter: blur(10px);                      
+      473 -    transition: transform 0.3s, box-shadow 0.3s;              
+      515 +    box-shadow: 5px 5px 0 var(--ink, #0B0B0F);                
+      516 +    color: var(--ink, #0B0B0F);                               
+      517 +    transition: transform 0.2s, box-shadow 0.2s;              
+      518  }
+      519  
+      476 -.lp-preview-card:hover {                                      
+      477 -    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);               
+      478 -}                                                             
+      520 +.lp-preview-card:hover { transform: translate(-2px, -2px); box
+          +-shadow: 7px 7px 0 var(--ink, #0B0B0F); }                     
+      521  
+      522  .lp-preview-label {
+      481 -    font-size: 1rem;                                          
+      482 -    font-weight: 700;                                         
+      523 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      524 +    font-size: 1.5rem;                                        
+      525 +    font-weight: 400;                                         
+      526 +    letter-spacing: 0.04em;                                   
+      527      margin: 0 0 1rem;
+      484 -    color: #fff;                                              
+      528 +    color: var(--ink, #0B0B0F);                               
+      529 +    text-transform: lowercase;                                
+      530  }
+      531  
+      532  .lp-preview-list {
+     ...
+      542      display: flex;
+      543      align-items: center;
+      544      gap: 0.55rem;
+      500 -    font-size: 0.82rem;                                       
+      501 -    color: rgba(255, 255, 255, 0.55);                         
+      545 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      546 +    font-size: 0.9rem;                                        
+      547 +    font-weight: 500;                                         
+      548 +    color: rgba(11, 11, 15, 0.78);                            
+      549  }
+      550  
+      551  .lp-preview-dot {
+      505 -    width: 5px;                                               
+      506 -    height: 5px;                                              
+      552 +    width: 7px;                                               
+      553 +    height: 7px;                                              
+      554      border-radius: 50%;
+      508 -    background: #7c5cff;                                      
+      555 +    background: var(--ink, #0B0B0F);                          
+      556      flex-shrink: 0;
+      557  }
+      558  
+     ...
+      568      overflow: visible;
+      569  }
+      570  
+      524 -/* Full-section background overlay that changes color on hover
+          - */                                                           
+      571  .lp-cta-hero::before {
+      572      content: '';
+      573      position: absolute;
+     ...
+      579  }
+      580  
+      581  .lp-cta-hero--blue::before {
+      536 -    background: radial-gradient(ellipse 80% 80% at 50% 60%, rg
+          -ba(59, 130, 246, 0.18), transparent 70%);                     
+      582 +    background: radial-gradient(ellipse 80% 80% at 50% 60%, rg
+          +ba(184, 217, 255, 0.22), transparent 70%);                    
+      583  }
+      584  
+      585  .lp-cta-hero--red::before {
+      540 -    background: radial-gradient(ellipse 80% 80% at 50% 60%, rg
+          -ba(239, 68, 68, 0.18), transparent 70%);                      
+      586 +    background: radial-gradient(ellipse 80% 80% at 50% 60%, rg
+          +ba(255, 181, 181, 0.25), transparent 70%);                    
+      587  }
+      588  
+      543 -/* Intense glow behind the character */                       
+      589  .lp-cta-hero-glow {
+      590      position: absolute;
+      591      top: 50%;
+     ...
+      593      transform: translate(-50%, -50%);
+      594      width: 700px;
+      595      height: 500px;
+      551 -    background: radial-gradient(ellipse, rgba(124, 92, 255, 0.
+          -15), transparent 65%);                                        
+      552 -    filter: blur(50px);                                       
+      596 +    background: radial-gradient(ellipse, rgba(199, 184, 255, 0
+          +.15), transparent 65%);                                       
+      597 +    filter: blur(55px);                                       
+      598      pointer-events: none;
+      599      transition: all 0.5s ease;
+      600  }
+     ...
+      602  .lp-cta-hero--blue .lp-cta-hero-glow {
+      603      width: 800px;
+      604      height: 600px;
+      560 -    background: radial-gradient(ellipse, rgba(59, 130, 246, 0.
+          -45), rgba(59, 130, 246, 0.15) 50%, transparent 70%);          
+      561 -    filter: blur(40px);                                       
+      605 +    background: radial-gradient(ellipse, rgba(184, 217, 255, 0
+          +.45), rgba(184, 217, 255, 0.15) 50%, transparent 70%);        
+      606  }
+      607  
+      608  .lp-cta-hero--red .lp-cta-hero-glow {
+      609      width: 800px;
+      610      height: 600px;
+      567 -    background: radial-gradient(ellipse, rgba(239, 68, 68, 0.4
+          -5), rgba(239, 68, 68, 0.15) 50%, transparent 70%);            
+      568 -    filter: blur(40px);                                       
+      611 +    background: radial-gradient(ellipse, rgba(255, 181, 181, 0
+          +.45), rgba(255, 181, 181, 0.15) 50%, transparent 70%);        
+      612  }
+      613  
+      614  .lp-cta-hero-wrapper {
+     ...
+      624      display: block;
+      625      margin: 0 auto;
+      626      border-radius: 16px;
+      584 -    filter: drop-shadow(0 0 40px rgba(124, 92, 255, 0.15));   
+      627 +    filter: drop-shadow(0 0 40px rgba(199, 184, 255, 0.15));  
+      628  }
+      629  
+      630  .lp-cta-hero-buttons {
+     ...
+      649  
+      650  .lp-cta-pill {
+      651      pointer-events: auto;
+      609 -    padding: 0.65rem 1.8rem;                                  
+      610 -    border: none;                                             
+      652 +    padding: 0.7rem 1.8rem;                                   
+      653 +    border: 3px solid var(--ink, #0B0B0F);                    
+      654      border-radius: 100px;
+      612 -    font-size: 0.9rem;                                        
+      613 -    font-weight: 700;                                         
+      614 -    color: #fff;                                              
+      655 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      656 +    font-size: 1rem;                                          
+      657 +    letter-spacing: 0.1em;                                    
+      658 +    color: var(--ink, #0B0B0F);                               
+      659      cursor: pointer;
+      616 -    letter-spacing: 0.02em;                                   
+      617 -    transition: box-shadow 0.3s, transform 0.3s;              
+      660 +    transition: transform 0.15s, box-shadow 0.15s;            
+      661 +    text-transform: uppercase;                                
+      662  }
+      663  
+      664  .lp-cta-pill--left {
+      621 -    background: linear-gradient(135deg, #3b82f6, #7c5cff);    
+      622 -    box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);            
+      665 +    background: var(--sky, #B8D9FF);                          
+      666 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      667  }
+      668 +.lp-cta-pill--left:hover { transform: translate(calc(-50% - 1p
+          +x), calc(-50% - 1px)); box-shadow: 5px 5px 0 var(--ink, #0B0B0
+          +F); }                                                         
+      669  
+      670  .lp-cta-pill--right {
+      626 -    background: linear-gradient(135deg, #dc2626, #7c5cff);    
+      627 -    box-shadow: 0 0 20px rgba(220, 38, 38, 0.35);             
+      671 +    background: var(--coral, #FFB5B5);                        
+      672 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);                
+      673  }
+      674 +.lp-cta-pill--right:hover { transform: translate(calc(-50% - 1
+          +px), calc(-50% - 1px)); box-shadow: 5px 5px 0 var(--ink, #0B0B
+          +0F); }                                                        
+      675  
+      676  /* ══════ FOOTER ══════ */
+      677  .lp-footer {
+      678      position: relative;
+      679      z-index: 1;
+      634 -    border-top: 1px solid rgba(255, 255, 255, 0.05);          
+      680 +    border-top: 3px solid var(--ink, #0B0B0F);                
+      681 +    background: rgba(11, 11, 15, 0.35);                       
+      682      padding: 0;
+      683  }
+      684  
+     ...
+      694  .lp-footer-brand {
+      695      display: flex;
+      696      flex-direction: column;
+      650 -    gap: 0.65rem;                                             
+      697 +    gap: 0.7rem;                                              
+      698  }
+      699  
+      700  .lp-footer-logo {
+      654 -    font-size: 1.1rem;                                        
+      655 -    font-weight: 700;                                         
+      656 -    background: linear-gradient(135deg, #7c5cff, #3b82f6);    
+      657 -    background-clip: text;                                    
+      658 -    -webkit-background-clip: text;                            
+      659 -    -webkit-text-fill-color: transparent;                     
+      701 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      702 +    font-size: 1.6rem;                                        
+      703 +    letter-spacing: 0.05em;                                   
+      704 +    color: var(--butter, #FFE89C);                            
+      705 +    text-shadow: 2px 2px 0 var(--ink, #0B0B0F);               
+      706 +    /* wipe old gradient */                                   
+      707 +    background: none;                                         
+      708 +    -webkit-text-fill-color: initial;                         
+      709  }
+      710  
+      711  .lp-footer-desc {
+      663 -    font-size: 0.8rem;                                        
+      664 -    color: rgba(255, 255, 255, 0.35);                         
+      712 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      713 +    font-size: 0.85rem;                                       
+      714 +    color: rgba(245, 245, 250, 0.5);                          
+      715      line-height: 1.6;
+      716      max-width: 280px;
+      717      margin: 0;
+     ...
+      724  }
+      725  
+      726  .lp-footer-heading {
+      677 -    font-size: 0.75rem;                                       
+      678 -    font-weight: 650;                                         
+      727 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      728 +    font-size: 0.95rem;                                       
+      729 +    font-weight: 400;                                         
+      730 +    letter-spacing: 0.15em;                                   
+      731      text-transform: uppercase;
+      680 -    letter-spacing: 0.08em;                                   
+      681 -    color: rgba(255, 255, 255, 0.55);                         
+      732 +    color: var(--lavender, #C7B8FF);                          
+      733      margin: 0 0 0.35rem;
+      734  }
+      735  
+      736  .lp-footer-col button {
+      737      background: none;
+      738      border: none;
+      688 -    color: rgba(255, 255, 255, 0.35);                         
+      689 -    font-size: 0.8rem;                                        
+      739 +    color: rgba(245, 245, 250, 0.55);                         
+      740 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      741 +    font-size: 0.88rem;                                       
+      742 +    font-weight: 500;                                         
+      743      cursor: pointer;
+      744      padding: 0.2rem 0;
+      745      text-align: left;
+      746      transition: color 0.2s;
+      747  }
+      748  
+      696 -.lp-footer-col button:hover {                                 
+      697 -    color: #fff;                                              
+      698 -}                                                             
+      749 +.lp-footer-col button:hover { color: var(--butter, #FFE89C); }
+      750  
+      751  .lp-footer-text {
+      701 -    font-size: 0.8rem;                                        
+      702 -    color: rgba(255, 255, 255, 0.35);                         
+      752 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      753 +    font-size: 0.88rem;                                       
+      754 +    color: rgba(245, 245, 250, 0.55);                         
+      755      line-height: 1.5;
+      756  }
+      757  
+     ...
+      759      max-width: 1100px;
+      760      margin: 0 auto;
+      761      padding: 1.25rem 1.5rem;
+      710 -    border-top: 1px solid rgba(255, 255, 255, 0.04);          
+      762 +    border-top: 2px solid rgba(255, 255, 255, 0.06);          
+      763      text-align: center;
+      712 -    font-size: 0.72rem;                                       
+      713 -    color: rgba(255, 255, 255, 0.2);                          
+      764 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      765 +    font-size: 0.78rem;                                       
+      766 +    color: rgba(245, 245, 250, 0.35);                         
+      767  }
+      768  
+      769  /* ══════ AUTH MODAL ══════ */
+     ...
+      771      position: fixed;
+      772      inset: 0;
+      773      z-index: 200;
+      721 -    background: rgba(0, 0, 0, 0.65);                          
+      774 +    background: rgba(0, 0, 0, 0.7);                           
+      775      backdrop-filter: blur(8px);
+      776      -webkit-backdrop-filter: blur(8px);
+      777      display: flex;
+     ...
+      784      position: relative;
+      785      width: 100%;
+      786      max-width: 560px;
+      734 -    background: rgba(14, 14, 22, 0.95);                       
+      735 -    border: 1px solid rgba(124, 92, 255, 0.12);               
+      787 +    background: var(--paper, #FFF8EA);                        
+      788 +    border: 4px solid var(--ink, #0B0B0F);                    
+      789      border-radius: 20px;
+      790      padding: 2.5rem 2rem 2rem;
+      738 -    box-shadow:                                               
+      739 -        0 0 0 1px rgba(255, 255, 255, 0.03),                  
+      740 -        0 32px 100px rgba(0, 0, 0, 0.6);                      
+      791 +    box-shadow: 6px 6px 0 var(--ink, #0B0B0F);                
+      792 +    color: var(--ink, #0B0B0F);                               
+      793      max-height: 90vh;
+      794      overflow-y: auto;
+      795      scrollbar-width: thin;
+      744 -    scrollbar-color: rgba(124, 92, 255, 0.3) transparent;     
+      796 +    scrollbar-color: var(--ink, #0B0B0F) transparent;         
+      797  }
+      798  
+      747 -.lp-modal::-webkit-scrollbar { width: 4px; }                  
+      748 -.lp-modal::-webkit-scrollbar-thumb { background: rgba(124, 92,
+          - 255, 0.3); border-radius: 4px; }                             
+      799 +.lp-modal::-webkit-scrollbar { width: 5px; }                  
+      800 +.lp-modal::-webkit-scrollbar-thumb { background: rgba(11, 11, 
+          +15, 0.3); border-radius: 4px; }                               
+      801  
+      802  .lp-modal-close {
+      803      position: absolute;
+      804      top: 1rem;
+      805      right: 1rem;
+      754 -    background: rgba(255, 255, 255, 0.04);                    
+      755 -    border: 1px solid rgba(255, 255, 255, 0.06);              
+      756 -    color: rgba(255, 255, 255, 0.4);                          
+      806 +    background: var(--coral, #FFB5B5);                        
+      807 +    border: 2px solid var(--ink, #0B0B0F);                    
+      808 +    color: var(--ink, #0B0B0F);                               
+      809      cursor: pointer;
+      758 -    padding: 0.35rem;                                         
+      810 +    padding: 0.4rem;                                          
+      811      border-radius: 8px;
+      812      display: flex;
+      761 -    transition: color 0.2s, background 0.2s;                  
+      813 +    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+      814 +    transition: transform 0.15s, box-shadow 0.15s;            
+      815  }
+      816  
+      764 -.lp-modal-close:hover {                                       
+      765 -    color: #fff;                                              
+      766 -    background: rgba(255, 255, 255, 0.08);                    
+      767 -}                                                             
+      817 +.lp-modal-close:hover { transform: translate(-1px, -1px); box-
+          +shadow: 3px 3px 0 var(--ink, #0B0B0F); }                      
+      818  
+      769 -/* ══════ FORM STYLES (reused from old landing, scoped in moda
+          -l) ══════ */                                                  
+      819 +/* ══════ FORM STYLES (inside comic modal) ══════ */          
+      820  .landing-header {
+      821      text-align: center;
+      822      margin-bottom: 1.75rem;
+      823  }
+      824  
+      825  .landing-logo {
+      776 -    font-size: 1.65rem;                                       
+      777 -    font-weight: 700;                                         
+      778 -    background: linear-gradient(135deg, #7c5cff, #3b82f6, #ec4
+          -899);                                                         
+      779 -    background-clip: text;                                    
+      780 -    -webkit-background-clip: text;                            
+      781 -    -webkit-text-fill-color: transparent;                     
+      782 -    letter-spacing: -0.02em;                                  
+      826 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      827 +    font-size: 2rem;                                          
+      828 +    font-weight: 400;                                         
+      829 +    letter-spacing: 0.04em;                                   
+      830 +    color: var(--ink, #0B0B0F);                               
+      831 +    text-transform: lowercase;                                
+      832      margin: 0;
+      833 +    /* wipe old gradient */                                   
+      834 +    background: none;                                         
+      835 +    -webkit-text-fill-color: initial;                         
+      836  }
+      837  
+      838  .landing-tagline {
+      787 -    color: rgba(255, 255, 255, 0.45);                         
+      788 -    font-size: 0.85rem;                                       
+      789 -    margin-top: 0.35rem;                                      
+      839 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-ser
+          +if);                                                          
+      840 +    color: rgba(11, 11, 15, 0.6);                             
+      841 +    font-size: 0.95rem;                                       
+      842 +    font-weight: 500;                                         
+      843 +    margin-top: 0.4rem;                                       
+      844  }
+      845  
+      846  .landing-tabs {
+      847      display: flex;
+      848      position: relative;
+      795 -    background: rgba(255, 255, 255, 0.04);                    
+      849 +    background: rgba(11, 11, 15, 0.06);                       
+      850 +    border: 2px solid var(--ink, #0B0B0F);                    
+      851      border-radius: 10px;
+      852      padding: 3px;
+      853      margin-bottom: 1.5rem;
+     ...
+      855  
+      856  .landing-tab {
+      857      flex: 1;
+      803 -    padding: 0.6rem;                                          
+      804 -    font-size: 0.85rem;                                       
+      805 -    font-weight: 600;                                         
+      806 -    color: rgba(255, 255, 255, 0.5);                          
+      858 +    padding: 0.65rem;                                         
+      859 +    font-family: var(--font-heading, 'Bangers', cursive);     
+      860 +    font-size: 1.05rem;                                       
+      861 +    letter-spacing: 0.08em;                                   
+      862 +    color: rgba(11, 11, 15, 0.55);                            
+      863      background: none;
+      864      border: none;
+      865      cursor: pointer;
+      866      z-index: 1;
+      867      transition: color 0.2s;
+      812 -    border-radius: 8px;                                       
+      868 +    border-radius: 7px;                                       
+      869 +    text-transform: uppercase;                                
+      870  }
+      871  
+      815 -.landing-tab.active { color: #fff; }                          
+      872 +.landing-tab.active { color: var(--ink, #0B0B0F); }           
+      873  
+      874  .landing-tab-indicator {
+      875      position: absolute;
+     ...
+      877      left: 3px;
+      878      width: calc(50% - 3px);
+      879      height: calc(100% - 6px);
+      823 -    background: rgba(124, 92, 255, 0.25);                     
+      824 -    border-radius: 8px;                                       
+      880 +    background: var(--butter, #FFE89C);                       
+      881 +    border: 2px solid var(--ink, #0B0B0F);                    
+      882 +    border-radius: 7px;                                       
+      883      z-index: 0;
+      884  }
+      885  
+      886  .landing-error {
+      829 -    background: rgba(239, 68, 68, 0.12);                      
+      830 -    border: 1px solid rgba(239, 68, 68, 0.25);                
+      831 -    color: #f87171;                                           
+      832 -    padding: 0.65rem 0.85rem;                                 
+      887 +    background: var(--coral, #FFB5B5);                        
+      888 +    border: 2px solid var(--ink, #0B0B0F);                    
+      889 +    color: var(--ink, #0B0B0F);                               
+      890 +    font-weight: 600;                                         
+      891 +    padding: 0.7rem 0.9rem;                                   
+      892      border-radius: 10px;
+      834 -    font-size: 0.8rem;                                        
+      893 +    font-size: 0.85rem;                                       
+      894      margin-bottom: 1rem;
+      895      overflow: hidden;
+      896 +    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+      897  }
+      898  
+      899  .landing-success {
+      840 -    background: rgba(16, 185, 129, 0.12);                     
+      841 -    border: 1px solid rgba(16, 185, 129, 0.25);               
+      842 -    color: #34d399;                                           
+      843 -    padding: 0.65rem 0.85rem;                                 
+      900 +    background: var(--mint, #B8F2D8);                         
+      901 +    border: 2px solid var(--ink, #0B0B0F);                    
+      902 +    color: var(--ink, #0B0B0F);                               
+      903 +    font-weight: 600;                                         
+      904 +    padding: 0.7rem 0.9rem;                                   
+      905      border-radius: 10px;
+      845 -    font-size: 0.8rem;                                        
+      906 +    font-size: 0.85rem;                                       
+      907      margin-bottom: 1rem;
+      908 +    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+      909  }
+      910  
+      911  .landing-form {
+     ...
+      919      overflow-y: auto;
+      920      padding-right: 4px;
+      921      scrollbar-width: thin;
+      860 -    scrollbar-color: rgba(124, 92, 255, 0.3) transparent;     
+      922 +    scrollbar-color: rgba(11, 11, 15, 0.3) transparent;       
+      923  }
+      924  
+      863 -.landing-form--register::-webkit-scrollbar { width: 4px; }    
+      864 -.landing-form--register::-webkit-scrollbar-thumb { background:
+          - rgba(124, 92, 255, 0.3); border-radius: 4px; }               
+      925 +.landing-form--register::-webkit-scrollbar { width: 5px; }    
+      926 +.landing-form--register::-webkit-scrollbar-thumb { background:
+          + rgba(11, 11, 15, 0.3); border-radius: 4px; }                 
+      927  
+      928  .landing-row {
+      929      display: flex;
+     ...
+      936      position: relative;
+      937      display: flex;
+      938      align-items: center;
+      877 -    background: rgba(255, 255, 255, 0.04);                    
+      878 -    border: 1px solid rgba(255, 255, 255, 0.08);              
+      939 +    background: #fff;                                         
+      940 +    border: 2px solid var(--ink, #0B0B0F);                    
+      941      border-radius: 10px;
+      880 -    transition: border-color 0.2s, box-shadow 0.2s;           
+      942 +    transition: box-shadow 0.2s;                              
+      943  }
+      944  
+      945  .landing-field:focus-within {
+      884 -    border-color: rgba(124, 92, 255, 0.5);                    
+      885 -    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.1);            
+      946 +    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);                
+      947  }
+      948  
+      949  .landing-field-icon {
+      950      position: absolute;
+      951      left: 0.85rem;
+      891 -    color: rgba(255, 255, 255, 0.3);                          
+      952 +    color: rgba(11, 11, 15, 0.55);                            
+      953      font-size: 1.05rem;
+      954      flex-shrink: 0;
+      955      pointer-events: none;
+     ...
+       961      padding: 0.7rem 0.85rem 0.7rem 2.6rem;
+       962      background: none;
+       963      border: none;
+       903 -    color: #fff;                                             
+       904 -    font-size: 0.85rem;                                      
+       905 -    font-family: inherit;                                    
+       964 +    color: var(--ink, #0B0B0F);                              
+       965 +    font-family: var(--font-body, 'Inter', sans-serif);      
+       966 +    font-size: 0.9rem;                                       
+       967      outline: none;
+       968  }
+       969  
+       970  .landing-field select { appearance: none; cursor: pointer; }
+       910 -.landing-field select option { background: #1a1a2e; color: #f
+           -ff; }                                                        
+       911 -.landing-field input::placeholder { color: rgba(255, 255, 255
+           -, 0.3); }                                                    
+       912 -.landing-field input[type="date"] { color-scheme: dark; }    
+       971 +.landing-field select option { background: #fff; color: var(-
+           +-ink, #0B0B0F); }                                            
+       972 +.landing-field input::placeholder { color: rgba(11, 11, 15, 0
+           +.4); }                                                       
+       973 +.landing-field input[type="date"] { color-scheme: light; }   
+       974  
+       975  .landing-eye {
+       976      position: absolute;
+       916 -    right: 0.75rem;                                          
+       977 +    right: 0.8rem;                                           
+       978      background: none;
+       979      border: none;
+       919 -    color: rgba(255, 255, 255, 0.35);                        
+       980 +    color: rgba(11, 11, 15, 0.5);                            
+       981      cursor: pointer;
+       982      padding: 0.25rem;
+       983      display: flex;
+       984      align-items: center;
+       924 -    font-size: 1.1rem;                                       
+       985 +    font-size: 1.15rem;                                      
+       986      transition: color 0.2s;
+       987  }
+       988  
+       928 -.landing-eye:hover { color: rgba(255, 255, 255, 0.7); }      
+       989 +.landing-eye:hover { color: var(--ink, #0B0B0F); }           
+       990  
+       991  .landing-submit {
+       931 -    margin-top: 0.5rem;                                      
+       932 -    padding: 0.75rem;                                        
+       933 -    background: linear-gradient(135deg, #7c5cff, #6246ea);   
+       934 -    border: none;                                            
+       992 +    margin-top: 0.6rem;                                      
+       993 +    padding: 0.8rem;                                         
+       994 +    background: var(--butter, #FFE89C);                      
+       995 +    border: 3px solid var(--ink, #0B0B0F);                   
+       996      border-radius: 10px;
+       936 -    color: #fff;                                             
+       937 -    font-size: 0.9rem;                                       
+       938 -    font-weight: 600;                                        
+       997 +    color: var(--ink, #0B0B0F);                              
+       998 +    font-family: var(--font-heading, 'Bangers', cursive);    
+       999 +    font-size: 1.1rem;                                       
+      1000 +    letter-spacing: 0.08em;                                  
+      1001      cursor: pointer;
+      1002      display: flex;
+      1003      align-items: center;
+      1004      justify-content: center;
+       943 -    min-height: 44px;                                        
+       944 -    transition: box-shadow 0.2s;                             
+      1005 +    min-height: 48px;                                        
+      1006 +    box-shadow: 4px 4px 0 var(--ink, #0B0B0F);               
+      1007 +    transition: transform 0.15s, box-shadow 0.15s;           
+      1008 +    text-transform: uppercase;                               
+      1009  }
+      1010  
+      1011  .landing-submit:disabled { opacity: 0.6; cursor: not-allowed;
+             }
+       948 -.landing-submit:hover:not(:disabled) { box-shadow: 0 4px 20px
+           - rgba(124, 92, 255, 0.4); }                                  
+      1012 +.landing-submit:hover:not(:disabled) { transform: translate(-
+           +1px, -1px); box-shadow: 5px 5px 0 var(--ink, #0B0B0F); }     
+      1013 +.landing-submit:active:not(:disabled) { transform: translate(
+           +2px, 2px); box-shadow: 2px 2px 0 var(--ink, #0B0B0F); }      
+      1014  
+      1015  .landing-spinner {
+      1016      width: 20px;
+      1017      height: 20px;
+       953 -    border: 2px solid rgba(255, 255, 255, 0.3);              
+       954 -    border-top-color: #fff;                                  
+      1018 +    border: 2.5px solid rgba(11, 11, 15, 0.25);              
+      1019 +    border-top-color: var(--ink, #0B0B0F);                   
+      1020      border-radius: 50%;
+      1021      animation: spin 0.6s linear infinite;
+      1022  }
+     ...
+      1025  
+      1026  .landing-switch {
+      1027      text-align: center;
+       963 -    font-size: 0.8rem;                                       
+       964 -    color: rgba(255, 255, 255, 0.4);                         
+      1028 +    font-family: var(--font-grotesk, 'Space Grotesk', sans-se
+           +rif);                                                        
+      1029 +    font-size: 0.88rem;                                      
+      1030 +    color: rgba(11, 11, 15, 0.6);                            
+      1031      margin-top: 0.5rem;
+      1032  }
+      1033  
+      1034  .landing-switch button {
+      1035      background: none;
+      1036      border: none;
+       971 -    color: #7c5cff;                                          
+       972 -    font-weight: 600;                                        
+      1037 +    color: var(--ink, #0B0B0F);                              
+      1038 +    font-weight: 700;                                        
+      1039      cursor: pointer;
+      1040      font-size: inherit;
+      1041      text-decoration: underline;
+      1042      text-underline-offset: 2px;
+      1043  }
+      1044  
+       979 -.landing-switch button:hover { color: #a78bfa; }             
+      1045 +.landing-switch button:hover { color: #5a4bc4; }             
+      1046  
+      1047  /* auth-loading shared */
+      1048  .auth-loading {
+     ...
+      1050      display: flex;
+      1051      align-items: center;
+      1052      justify-content: center;
+       987 -    background: #06060b;                                     
+      1053 +    background: var(--bg-primary, #1a1a22);                  
+      1054  }
+      1055  
+      1056  .auth-loading-spinner {
+       991 -    width: 36px;                                             
+       992 -    height: 36px;                                            
+       993 -    border: 3px solid rgba(124, 92, 255, 0.2);               
+       994 -    border-top-color: #7c5cff;                               
+      1057 +    width: 38px;                                             
+      1058 +    height: 38px;                                            
+      1059 +    border: 3px solid rgba(199, 184, 255, 0.25);             
+      1060 +    border-top-color: var(--lavender, #C7B8FF);              
+      1061      border-radius: 50%;
+      1062      animation: spin 0.8s linear infinite;
+      1063  }
+      1064  
+      1065  /* ══════ RESPONSIVE ══════ */
+      1066  @media (max-width: 900px) {
+      1001 -    .lp-nav-center {                                         
+      1002 -        display: none;                                       
+      1003 -    }                                                        
+      1067 +    .lp-nav-center { display: none; }                        
+      1068 +    .lp-nav-hamburger { display: flex; }                     
+      1069 +    .lp-nav-actions { display: none; }                       
+      1070  
+      1005 -    .lp-nav-hamburger {                                      
+      1006 -        display: flex;                                       
+      1007 -    }                                                        
+      1008 -                                                             
+      1009 -    .lp-nav-actions {                                        
+      1010 -        display: none;                                       
+      1011 -    }                                                        
+      1012 -                                                             
+      1071      .lp-footer-inner {
+      1072          grid-template-columns: 1fr 1fr;
+      1073          gap: 2rem;
+      1074      }
+      1017 -                                                             
+      1018 -    .lp-footer-brand {                                       
+      1019 -        grid-column: 1 / -1;                                 
+      1020 -    }                                                        
+      1075 +    .lp-footer-brand { grid-column: 1 / -1; }                
+      1076  }
+      1077  
+      1078  @media (max-width: 768px) {
+      1024 -    .lp-features-grid {                                      
+      1025 -        grid-template-columns: repeat(2, 1fr);               
+      1026 -    }                                                        
+      1027 -                                                             
+      1028 -    .lp-preview-grid {                                       
+      1029 -        grid-template-columns: 1fr;                          
+      1030 -    }                                                        
+      1031 -                                                             
+      1032 -    .lp-why-stats {                                          
+      1033 -        gap: 2rem;                                           
+      1034 -    }                                                        
+      1035 -                                                             
+      1036 -    .lp-nav {                                                
+      1037 -        padding: 0.75rem 1.25rem;                            
+      1038 -    }                                                        
+      1039 -                                                             
+      1040 -    .lp-cta-hero-wrapper {                                   
+      1041 -        max-width: 500px;                                    
+      1042 -    }                                                        
+      1043 -                                                             
+      1044 -    .lp-cta-pill {                                           
+      1045 -        padding: 0.55rem 1.3rem;                             
+      1046 -        font-size: 0.8rem;                                   
+      1047 -    }                                                        
+      1079 +    .lp-features-grid { grid-template-columns: repeat(2, 1fr)
+           +; }                                                          
+      1080 +    .lp-preview-grid { grid-template-columns: 1fr; }         
+      1081 +    .lp-why-stats { gap: 1rem; }                             
+      1082 +    .lp-nav { padding: 0.75rem 1.25rem; }                    
+      1083 +    .lp-cta-hero-wrapper { max-width: 500px; }               
+      1084 +    .lp-cta-pill { padding: 0.55rem 1.3rem; font-size: 0.9rem
+           +; }                                                          
+      1085  }
+      1086  
+      1087  @media (max-width: 520px) {
+      1051 -    .lp-section {                                            
+      1052 -        padding: 3.5rem 1.15rem;                             
+      1053 -    }                                                        
+      1054 -                                                             
+      1055 -    .lp-hero {                                               
+      1056 -        padding-top: 6.5rem;                                 
+      1057 -    }                                                        
+      1058 -                                                             
+      1059 -    .lp-features-grid {                                      
+      1060 -        grid-template-columns: 1fr;                          
+      1061 -    }                                                        
+      1062 -                                                             
+      1088 +    .lp-section { padding: 3.5rem 1.15rem; }                 
+      1089 +    .lp-hero { padding-top: 6.5rem; }                        
+      1090 +    .lp-features-grid { grid-template-columns: 1fr; }        
+      1091      .lp-hero-btns {
+      1092          flex-direction: column;
+      1093          width: 100%;
+      1094          max-width: 300px;
+      1095      }
+      1068 -                                                             
+      1096      .lp-btn { width: 100%; text-align: center; }
+      1097  
+      1071 -    .lp-modal {                                              
+      1072 -        padding: 2rem 1.25rem 1.75rem;                       
+      1073 -        border-radius: 16px;                                 
+      1074 -    }                                                        
+      1098 +    .lp-modal { padding: 2rem 1.25rem 1.75rem; border-radius:
+           + 16px; }                                                     
+      1099 +    .landing-row { flex-direction: column; }                 
+      1100 +    .landing-form--register { max-height: 340px; }           
+      1101  
+      1076 -    .landing-row {                                           
+      1077 -        flex-direction: column;                              
+      1078 -    }                                                        
+      1079 -                                                             
+      1080 -    .landing-form--register {                                
+      1081 -        max-height: 340px;                                   
+      1082 -    }                                                        
+      1083 -                                                             
+      1102      .lp-footer-inner {
+      1103          grid-template-columns: 1fr;
+      1104          gap: 1.5rem;
+     ...
+      1107  
+      1108      .lp-cta-hero-buttons {
+      1109          position: static;
+      1110 +        display: flex;                                       
+      1111          justify-content: center;
+      1112          gap: 1rem;
+      1113          padding: 1.5rem 0 0;
+      1114      }
+      1115  
+      1097 -    .lp-cta-pill {                                           
+      1098 -        padding: 0.6rem 1.5rem;                              
+      1099 -        font-size: 0.85rem;                                  
+      1116 +    .lp-cta-pill--left,                                      
+      1117 +    .lp-cta-pill--right {                                    
+      1118 +        position: static;                                    
+      1119 +        transform: none !important;                          
+      1120      }
+      1121  }
+
+● Now updating the inline gradient/shadow colors in Landing.jsx that were using
+  the old purple-blue palette.
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 4 lines, removed 4 lines
+      58  ];
+      59  
+      60  const PREVIEWS = [
+      61 -    { label: 'Dashboard', gradient: 'linear-gradient(135deg, #7
+         -c5cff22, #3b82f622)', items: ['Study streak tracker', 'Exam cou
+         -ntdown', 'Quick actions', 'Achievement badges'] },             
+      62 -    { label: 'Study Vault', gradient: 'linear-gradient(135deg, 
+         -#3b82f622, #06b6d422)', items: ['Semester folders', 'Subject or
+         -ganization', 'PDF & image preview', 'Drag-and-drop upload'] }, 
+      63 -    { label: 'Journal', gradient: 'linear-gradient(135deg, #ec4
+         -89922, #f59e0b22)', items: ['Daily reflections', 'Mood tracking
+         -', 'Calendar view', 'Rich text editor'] },                     
+      64 -    { label: 'Study Zone', gradient: 'linear-gradient(135deg, #
+         -10b98122, #7c5cff22)', items: ['Pomodoro timer', 'Session loggi
+         -ng', 'Focus mode', 'Study analytics'] },                       
+      61 +    { label: 'Dashboard', gradient: 'linear-gradient(135deg, #C
+         +7B8FF, #B8D9FF)', items: ['Study streak tracker', 'Exam countdo
+         +wn', 'Quick actions', 'Achievement badges'] },                 
+      62 +    { label: 'Study Vault', gradient: 'linear-gradient(135deg, 
+         +#B8F2D8, #B8D9FF)', items: ['Semester folders', 'Subject organi
+         +zation', 'PDF & image preview', 'Drag-and-drop upload'] },     
+      63 +    { label: 'Journal', gradient: 'linear-gradient(135deg, #FFB
+         +5B5, #FFE89C)', items: ['Daily reflections', 'Mood tracking', '
+         +Calendar view', 'Rich text editor'] },                         
+      64 +    { label: 'Study Zone', gradient: 'linear-gradient(135deg, #
+         +FFE89C, #C7B8FF)', items: ['Pomodoro timer', 'Session logging',
+         + 'Focus mode', 'Study analytics'] },                           
+      65  ];
+      66  
+      67  const SCHOOL_TYPES = ['High School', 'Senior Secondary', 'Under
+          graduate', 'Postgraduate', 'Diploma / Polytechnic', 'Other'];
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 1 line, removed 1 line
+      239                      <motion.button
+      240                          className="lp-btn lp-btn--primary"
+      241                          onClick={() => openAuth('register')}
+      242 -                        whileHover={{ scale: 1.04, boxShadow: 
+          -'0 0 40px rgba(124,92,255,0.4)' }}                            
+      242 +                        whileHover={{ scale: 1.03 }}          
+      243                          whileTap={{ scale: 0.97 }}
+      244                      >
+      245                          Get Started — it's free
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 2 lines, removed 4 lines
+      349                              onClick={() => openAuth('login')}
+      350                              onMouseEnter={() => setCtaHover('l
+           ogin')}
+      351                              onMouseLeave={() => setCtaHover(nu
+           ll)}
+      352 -                            whileHover={{ boxShadow: '0 0 35px
+          - rgba(59,130,246,0.6)' }}                                     
+      353 -                            style={{ transform: 'translate(-50
+          -%, -50%)' }}                                                  
+      352 +                            whileTap={{ scale: 0.96 }}        
+      353                          >
+      354                              Login
+      355                          </motion.button>
+     ...
+      358                              onClick={() => openAuth('register'
+           )}
+      359                              onMouseEnter={() => setCtaHover('r
+           egister')}
+      360                              onMouseLeave={() => setCtaHover(nu
+           ll)}
+      362 -                            whileHover={{ boxShadow: '0 0 35px
+          - rgba(239,68,68,0.6)' }}                                      
+      363 -                            style={{ transform: 'translate(-50
+          -%, -50%)' }}                                                  
+      361 +                            whileTap={{ scale: 0.96 }}        
+      362                          >
+      363                              Create Account
+      364                          </motion.button>
+
+● Now also updating the feature card whileHover purple border to a palette
+  color:
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 1 line, removed 1 line
+      272                              className="lp-feature-card"
+      273                              variants={fadeUp}
+      274                              custom={i * 0.5}
+      275 -                            whileHover={{ y: -6, borderColor: 
+          -'rgba(124,92,255,0.35)' }}                                    
+      275 +                            whileHover={{ y: -4 }}            
+      276                          >
+      277                              <div className="lp-feature-icon">
+      278                                  <f.icon size={22} />
+
+● Let me verify the final JSX and CSS hang together by scanning for any other
+  stale rgba(124,92,255...) or hardcoded purple refs I may have missed.
+
+  Searched for 1 pattern (ctrl+o to expand)
+● JSX is clean. Let me verify there are no leftover old-theme color references
+  in the CSS either (any I missed should be low-stakes but let's confirm):
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Clean. Here's what changed:
+
+  Landing.css — rewrote as comic theme
+  - Background: dark app bg (#1a1a22) + halftone dot pattern (same as rest of
+  the site) + softened pastel orbs (lavender/butter/coral) replacing the
+  purple/blue/pink ones
+  - Fonts: Bangers for all display titles/buttons/labels, Space Grotesk for body
+   — matches Dashboard/Tasks/Notes
+  - Borders & shadows: 3–4px solid black borders with offset solid-color shadows
+   (4px 4px 0 #0B0B0F) instead of thin 1px + blurry shadows
+  - Palette: all accents now use --lavender / --mint / --butter / --coral / 
+  --sky CSS vars from index.css — no more #7c5cff / #3b82f6 / #ec4899
+  - Hero title: lowercase Bangers with text-shadow (matches .comic-page-title)
+  - Nav CTA, hero buttons, modal submit: butter-yellow fills with neobrutalist
+  shadow
+  - Feature cards: dark glass with thick black border, solid shadow, and a
+  rotating pastel icon color per card; subtle -0.3deg / +0.3deg tilt like your
+  note cards
+  - Why-section stats: three pastel cards (coral / mint / butter) with comic
+  shadows instead of thin outlined stats
+  - Preview cards: keep the per-section gradient, now using pastel palette
+  colors (lavender→sky, mint→sky, coral→butter, butter→lavender)
+  - CTA pills: sky-blue and coral with solid shadows instead of blue/red
+  gradients
+  - Auth modal: paper (#FFF8EA) background with 4px black border + 6px offset
+  shadow — a true ComicCardPaper; tab indicator is butter-yellow; submit button
+  is the comic primary button; error/success alerts in coral/mint chips
+  - Footer: butter-yellow Bangers logo, lavender Bangers column headings,
+  hover-to-butter links
+
+  Landing.jsx — small consistency tweaks
+  - PREVIEWS gradient colors swapped to the pastel palette
+  - Removed 3 whileHover blocks that injected old purple/blue/red glow shadows
+  (now let the CSS comic shadow take over)
+
+  Load the dev server to eyeball it — pages on /landing should now visually
+  match the aesthetic of Dashboard, Tasks, Notes, Journal, etc.
+
+  cd frontend && npm run dev
+
+  When you're happy, push to deploy:
+  git add frontend/src/pages/Landing.css frontend/src/pages/Landing.jsx
+  git commit -m "Restyle Landing page to match site comic theme"
+  git push origin main
+
+✻ Cooked for 3m 56s
+
+❯ http://localhost:5173/tasks sometimes this page doent load even in the        
+  localhost fix it                                                              
+
+● Let me look at the Tasks page for race conditions or crash points.
+
+  Read 1 file (ctrl+o to expand)
+
+● Multiple crashes here. Let me verify the AppContext function names before
+  fixing.
+
+  Searched for 2 patterns, read 1 file (ctrl+o to expand)
+
+● Let me check more carefully — there's a recent commit about duplicate
+  getSubtasksForTask.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(git log --all --oneline -- frontend/src/pages/Tasks.jsx | head -10)
+  ⎿  09f73ac Fix duplicate getSubtasksForTask declaration in Tasks.jsx
+     ae0bbbe prepare for deployment
+     ffb962d Add Pomodoro, Timetable, Exam Countdown, Subtasks, deployment
+     … +2 lines (ctrl+o to expand)
+
+● Let me check the subtasks data shape to write a proper local getter.
+
+  Read 1 file (ctrl+o to expand)
+
+● Found all the bugs. Here's the picture:
+
+  Tasks.jsx has five crash bugs — they only surface once tasks finish loading
+  from the backend, which is why you see "sometimes doesn't load":
+
+  #: 1
+  Bug: HiOutlineCalendar used on line 123 but not imported
+  Effect: ReferenceError on render
+  ────────────────────────────────────────
+  #: 2
+  Bug: HiChevronDown / HiChevronRight used on line 148 but not imported (imports
+
+    have HiOutline… variants)
+  Effect: ReferenceError on render
+  ────────────────────────────────────────
+  #: 3
+  Bug: Destructures toggleTaskStatus but context exports toggleTask; code calls
+    toggleTask(...) on line 107 — undefined
+  Effect: Click crashes
+  ────────────────────────────────────────
+  #: 4
+  Bug: Destructures toggleSubtaskStatus / calls toggleSubtask — same mismatch
+  Effect: Click crashes
+  ────────────────────────────────────────
+  #: 5
+  Bug: Destructures getSubtasksForTask — this function does not exist on the
+    context (the 09f73ac commit removed the duplicate local declaration but the
+    context never exported one)
+  Effect: Crash on every render that has tasks
+
+  Bug 5 is the main reason for the blank page: on first load tasks is empty,
+  loader shows fine; when tasks arrive, getSubtasksForTask(task.id) throws "… is
+   not a function", and React unmounts to blank.
+
+  Fixing all five:
+
+● Update(frontend\src\pages\Tasks.jsx)
+  ⎿  Added 1 line, removed 1 line
+      1  import { useState } from 'react';
+      2  import { motion, AnimatePresence } from 'framer-motion';
+      3 -import { HiOutlinePlus, HiOutlineCheck, HiOutlinePencilAlt, HiOu
+        -tlineTrash, HiOutlineClock, HiOutlineChevronDown, HiOutlineChevr
+        -onUp, HiOutlineTag } from 'react-icons/hi';                     
+      3 +import { HiOutlinePlus, HiOutlineCheck, HiOutlinePencilAlt, HiOu
+        +tlineTrash, HiOutlineClock, HiOutlineChevronDown, HiOutlineChevr
+        +onUp, HiOutlineChevronRight, HiOutlineTag, HiOutlineCalendar } f
+        +rom 'react-icons/hi';                                           
+      4  import { useApp } from '../contexts/AppContext';
+      5  import { useTheme } from '../contexts/ThemeContext';
+      6  import { formatDate } from '../utils/helpers';
+
+● Continuing with the remaining four fixes.
+
+● Update(frontend\src\pages\Tasks.jsx)
+  ⎿  Added 2 lines, removed 1 line
+      10  const FILTERS = ['all', 'active', 'completed'];
+      11  
+      12  export default function Tasks() {
+      13 -    const { tasks, subtasks, addTask, updateTask, deleteTask, t
+         -oggleTaskStatus, getSubtasksForTask, addSubtask, toggleSubtaskS
+         -tatus, deleteSubtask } = useApp();                             
+      13 +    const { tasks, subtasks, addTask, updateTask, deleteTask, t
+         +oggleTask, addSubtask, toggleSubtask, deleteSubtask } = useApp(
+         +);                                                             
+      14 +    const getSubtasksForTask = (taskId) => subtasks.filter(s =>
+         + s.taskId === taskId);                                         
+      15      const { tone } = useTheme();
+      16      const isPro = tone === 'pro';
+      17      const [filter, setFilter] = useState('all');
+
+● Update(frontend\src\pages\Tasks.jsx)
+  ⎿  Added 6 lines, removed 4 lines
+      120                                              <span className={`
+           task-title ${task.completed ? 'done' : ''}`}>{task.title}</spa
+           n>
+      121                                              <div className="ta
+           sk-meta">
+      122                                                  {task.subject 
+           && <span className="task-subject">{task.subject}</span>}
+      123 -                                                <span classNam
+          -e="task-due">                                                 
+      124 -                                                    <HiOutline
+          -Calendar size={12} />                                         
+      125 -                                                    {formatDat
+          -e(task.dueDate)}                                              
+      126 -                                                </span>       
+      123 +                                                {task.dueDate 
+          +&& (                                                          
+      124 +                                                    <span clas
+          +sName="task-due">                                             
+      125 +                                                        <HiOut
+          +lineCalendar size={12} />                                     
+      126 +                                                        {forma
+          +tDate(task.dueDate)}                                          
+      127 +                                                    </span>   
+      128 +                                                )}            
+      129                                              </div>
+      130                                              {/* Subtask progre
+           ss bar */}
+      131                                              {progress && (
+
+● Update(frontend\src\pages\Tasks.jsx)
+  ⎿  Added 1 line, removed 1 line
+      148                                          </span>
+      149  
+      150                                          <button className="btn
+           -icon task-expand" onClick={() => setExpandedTaskId(isExpanded
+            ? null : task.id)}>
+      151 -                                            {isExpanded ? <HiC
+          -hevronDown size={16} /> : <HiChevronRight size={16} />}       
+      151 +                                            {isExpanded ? <HiO
+          +utlineChevronDown size={16} /> : <HiOutlineChevronRight size={
+          +16} />}                                                       
+      152                                          </button>
+      153  
+      154                                          <button className="btn
+           -icon task-delete" onClick={() => deleteTask(task.id)} title="
+           Delete">
+
+● Let me verify the file is now clean by scanning for any remaining undefined
+  identifiers:
+
+  Searched for 2 patterns, read 1 file (ctrl+o to expand)
+
+● All bugs addressed. Here's the summary:
+
+  What was crashing
+
+  frontend/src/pages/Tasks.jsx had 5 broken references. The page worked on
+  initial load because tasks was empty, but once the backend returned tasks —
+  especially on localhost where fetch is near-instant — React hit the bad code
+  and the whole page unmounted to blank.
+
+  Fixes applied (all in Tasks.jsx)
+
+  Line 3 — added missing icon imports:
+  - HiOutlineCalendar (used for due-date icon)
+  - HiOutlineChevronRight (used for collapsed-state arrow)
+
+  Line 13 — corrected destructure to match what AppContext actually exports:
+  - toggleTaskStatus → toggleTask
+  - toggleSubtaskStatus → toggleSubtask
+  - Removed getSubtasksForTask (never existed on context)
+
+  Line 14 — added a local helper that derives subtasks from the context's
+  subtasks array using the taskId field (which is how AppContext normalizes the
+  backend's task_id):
+  const getSubtasksForTask = (taskId) => subtasks.filter(s => s.taskId ===
+  taskId);
+
+  Line 123 — wrapped due-date in a null check (small robustness bonus — used to
+  render even without a date):
+  {task.dueDate && (<span className="task-due">…</span>)}
+
+  Line 148 — fixed the chevron icons:
+  - <HiChevronDown> → <HiOutlineChevronDown>
+  - <HiChevronRight> → <HiOutlineChevronRight>
+
+  Why "sometimes" and not "always"
+
+  Before any tasks have loaded (cold start, slow Render cold-wake, or offline),
+  tasks.length === 0 and the empty-state branch renders — no crash. The moment
+  tasks populate, the page hit getSubtasksForTask(...) (undefined → TypeError)
+  and unmounted to blank. On localhost the backend returns fast so you'd usually
+   see tasks → usually blank; occasional cold starts or network hiccups gave you
+   "sometimes it loads."
+
+  Hard-reload /tasks and it should render reliably now. When ready to deploy:
+
+  git add frontend/src/pages/Tasks.jsx
+  git commit -m "Fix Tasks page crash: missing icon imports, wrong context fn 
+  names, undefined getSubtasksForTask"
+  git push origin main
+
+✻ Brewed for 2m 9s
+
+❯ [Image #1] add a complete tasks  button then a slash to complete it           
+[Image #1]
+
+● Let me check Tasks.css to see if the checkbox/strike-through styles are
+  defined.
+
+  Read 1 file (ctrl+o to expand)
+
+● The checkbox does exist in the JSX (renders via toggleTask click) but it's
+  invisible because the CSS uses undefined variables (--border-color-hover,
+  --accent-rgb, --border-subtle, etc.). Let me rewrite the checkbox +
+  strike-through styles with concrete comic-theme colors.
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 24 lines, removed 13 lines
+       77  }
+       78  
+       79  .task-checkbox {
+       80 -    width: 22px;                                              
+       81 -    height: 22px;                                             
+       82 -    border-radius: var(--radius-sm);                          
+       83 -    border: 2px solid var(--border-color-hover);              
+       84 -    background: transparent;                                  
+       80 +    width: 26px;                                              
+       81 +    height: 26px;                                             
+       82 +    border-radius: 50%;                                       
+       83 +    border: 2.5px solid var(--ink, #0B0B0F);                  
+       84 +    background: var(--paper, #FFF8EA);                        
+       85      display: flex;
+       86      align-items: center;
+       87      justify-content: center;
+       88      flex-shrink: 0;
+       89 -    color: white;                                             
+       90 -    transition: all var(--transition-base);                   
+       89 +    color: var(--ink, #0B0B0F);                               
+       90 +    box-shadow: 2px 2px 0 var(--ink, #0B0B0F);                
+       91 +    cursor: pointer;                                          
+       92 +    transition: transform 0.15s ease, box-shadow 0.15s ease, b
+          +ackground 0.2s ease;                                          
+       93 +    padding: 0;                                               
+       94  }
+       95  
+       96  .task-checkbox:hover {
+       94 -    border-color: var(--accent);                              
+       95 -    background: rgba(var(--accent-rgb), 0.1);                 
+       96 -    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.06);      
+       97 +    transform: translate(-1px, -1px);                         
+       98 +    box-shadow: 3px 3px 0 var(--ink, #0B0B0F);                
+       99 +    background: var(--butter, #FFE89C);                       
+      100  }
+      101  
+      102 +.task-checkbox:active {                                       
+      103 +    transform: translate(1px, 1px);                           
+      104 +    box-shadow: 1px 1px 0 var(--ink, #0B0B0F);                
+      105 +}                                                             
+      106 +                                                              
+      107  .task-checkbox.checked {
+      100 -    background: var(--accent);                                
+      101 -    border-color: var(--accent);                              
+      102 -    box-shadow: var(--accent-glow);                           
+      108 +    background: var(--mint, #B8F2D8);                         
+      109 +    color: var(--ink, #0B0B0F);                               
+      110  }
+      111  
+      112 +.task-checkbox.checked:hover {                                
+      113 +    background: var(--mintDeep, #6BDBA8);                     
+      114 +}                                                             
+      115 +                                                              
+      116  .task-info {
+      117      flex: 1;
+      118      min-width: 0;
+
+● Now strengthening the strike-through on completed tasks so the "slash" is
+  obvious:
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 7 lines, removed 1 line
+      130  
+      131  .task-title.done {
+      132      text-decoration: line-through;
+      133 -    color: var(--text-tertiary);                              
+      133 +    text-decoration-thickness: 2.5px;                         
+      134 +    text-decoration-color: var(--coralDeep, #FF7A7A);         
+      135 +    color: rgba(245, 245, 250, 0.45);                         
+      136  }
+      137  
+      138 +.task-item.completed {                                        
+      139 +    opacity: 0.7;                                             
+      140 +}                                                             
+      141 +                                                              
+      142  .task-meta {
+      143      display: flex;
+      144      align-items: center;
+
+● Now the same for subtask checkbox to stay consistent:
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 13 lines, removed 10 lines
+      258  }
+      259  
+      260  .subtask-checkbox {
+      261 -    width: 16px;                                              
+      262 -    height: 16px;                                             
+      263 -    border-radius: 3px;                                       
+      264 -    border: 2px solid var(--border-color-hover);              
+      265 -    background: transparent;                                  
+      261 +    width: 18px;                                              
+      262 +    height: 18px;                                             
+      263 +    border-radius: 50%;                                       
+      264 +    border: 2px solid var(--ink, #0B0B0F);                    
+      265 +    background: var(--paper, #FFF8EA);                        
+      266      display: flex;
+      267      align-items: center;
+      268      justify-content: center;
+      269      flex-shrink: 0;
+      270 -    color: white;                                             
+      271 -    transition: all var(--transition-base);                   
+      270 +    color: var(--ink, #0B0B0F);                               
+      271 +    box-shadow: 1.5px 1.5px 0 var(--ink, #0B0B0F);            
+      272 +    transition: transform 0.15s ease, box-shadow 0.15s ease, b
+          +ackground 0.2s ease;                                          
+      273      cursor: pointer;
+      274 +    padding: 0;                                               
+      275  }
+      276  
+      277  .subtask-checkbox:hover {
+      276 -    border-color: var(--accent);                              
+      278 +    background: var(--butter, #FFE89C);                       
+      279 +    transform: translate(-1px, -1px);                         
+      280 +    box-shadow: 2.5px 2.5px 0 var(--ink, #0B0B0F);            
+      281  }
+      282  
+      283  .subtask-checkbox.checked {
+      280 -    background: var(--accent);                                
+      281 -    border-color: var(--accent);                              
+      284 +    background: var(--mint, #B8F2D8);                         
+      285  }
+      286  
+      287  .subtask-title {
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 3 lines, removed 1 line
+      295  
+      296  .subtask-title.done {
+      297      text-decoration: line-through;
+      298 -    color: var(--text-tertiary);                              
+      298 +    text-decoration-thickness: 2px;                           
+      299 +    text-decoration-color: var(--coralDeep, #FF7A7A);         
+      300 +    color: rgba(245, 245, 250, 0.45);                         
+      301  }
+      302  
+      303  .subtask-delete {
+
+● Checkbox + strike-through now work. Here's what you'll see on /tasks:
+
+  - Round paper-colored checkbox on the left of every task (26×26, 2.5px black
+  outline, offset black shadow — comic style)
+  - Hover: lifts by 1px, bigger shadow, fill turns butter-yellow
+  - Click: checkbox fills mint green, the HiOutlineCheck ✓ shows inside (that
+  icon was already in the JSX)
+  - Task title gets a thick coral-red slash (strikethrough) + muted to 45%
+  opacity
+  - Whole task card fades to 0.7 opacity so completed tasks visually recede
+
+  Same treatment on subtask checkboxes (smaller 18×18, same pattern).
+
+  Files changed: frontend/src/pages/Tasks.css only — the JSX already wired
+  toggleTask to the checkbox, it just wasn't rendering because the CSS relied on
+   undefined custom properties (--border-color-hover, --accent-rgb,
+  --accent-glow, --border-subtle) that aren't defined in index.css.
+
+  Hard-reload the page to clear the cached stylesheet and try clicking the
+  circle on "Record Signature".
+
+✻ Cooked for 3m 52s
+
+❯ [Image #2] the allingment is not good                                         
+  ⎿  [Image #2]
+
+● Let me look at the current CSS around the task row to find the alignment
+  issue.
+
+  Read 1 file (ctrl+o to expand)
+
+● Let me check the Layout and Sidebar to understand the actual rendering width.
+
+  Read 2 files (ctrl+o to expand)
+
+● Looking at the screenshot, the checkbox and content are clustered to the right
+   while the left side of the card is empty. I see two issues in Tasks.css:
+
+  1. There are two duplicate .task-item definitions — the first (lines 60-68)
+  sets display: flex; align-items: center; padding: var(--space-md) 
+  var(--space-lg) !important (row direction); the second (lines 159-168) sets
+  display: flex; flex-direction: column; padding: 0 !important. Both have
+  !important so the later one wins, but the first still sets align-items: center
+   and gap which apply ambiguously.
+  2. .task-main-row has no explicit width or justify-content, and .task-info has
+   flex: 1 but no text-align.
+
+  Fixing both:
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 1 line, removed 16 lines
+      57      gap: var(--space-sm);
+      58  }
+      59  
+      60 -.task-item {                                                   
+      61 -    display: flex;                                             
+      62 -    align-items: center;                                       
+      63 -    gap: var(--space-md);                                      
+      64 -    padding: var(--space-md) var(--space-lg) !important;       
+      65 -    border-left: 3px solid transparent;                        
+      66 -    border-color: var(--border-subtle) !important;             
+      67 -    transition: all var(--transition-base);                    
+      68 -}                                                              
+      69 -                                                               
+      60  .task-item:hover {
+      71 -    border-left-color: var(--accent) !important;               
+      72 -    background: var(--bg-card-hover) !important;               
+      61 +    border-left-color: var(--lavender, #C7B8FF) !important;    
+      62  }
+      63  
+      75 -.task-item.completed {                                         
+      76 -    opacity: 0.5;                                              
+      77 -}                                                              
+      78 -                                                               
+      64  .task-checkbox {
+      65      width: 26px;
+      66      height: 26px;
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 6 lines, removed 1 line
+      164      gap: 0;
+      165      padding: 0 !important;
+      166      border-left: 3px solid transparent;
+      167 -    border-color: var(--border-subtle) !important;            
+      167      transition: all var(--transition-base);
+      168      overflow: hidden;
+      169 +    width: 100%;                                              
+      170 +    box-sizing: border-box;                                   
+      171  }
+      172  
+      173  .task-main-row {
+      174      display: flex;
+      175 +    flex-direction: row;                                      
+      176      align-items: center;
+      177 +    justify-content: flex-start;                              
+      178      gap: var(--space-md);
+      179      padding: var(--space-md) var(--space-lg);
+      180 +    width: 100%;                                              
+      181 +    box-sizing: border-box;                                   
+      182  }
+      183  
+      184  .task-expand {
+
+● Update(frontend\src\pages\Tasks.css)
+  ⎿  Added 2 lines, removed 1 line
+       99  }
+      100  
+      101  .task-info {
+      102 -    flex: 1;                                                  
+      102 +    flex: 1 1 0%;                                             
+      103      min-width: 0;
+      104 +    text-align: left;                                         
+      105  }
+      106  
+      107  .task-title {
+
+● Now let me verify the final state of the file and make sure nothing's broken:
+
+  Read 1 file (ctrl+o to expand)
+
+● Good. The duplicate .task-item row-flex definition is gone. The unique
+  column-flex .task-item definition is further down (lines 140+), along with
+  .task-main-row now having explicit width: 100% and justify-content: 
+  flex-start.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Only one .task-item block now (no more duplicate). Hard-reload
+  localhost:5173/tasks and the task row should render as:
+
+  Left edge of card → checkbox → title + meta → priority badge → chevron → 
+  delete button
+
+  — in a single left-aligned row, with the checkbox flush to the start (24px
+  padding in from the card border).
+
+  What changed:
+  - Removed the old duplicate .task-item rule that set align-items: center +
+  padding: 16px 24px !important (it was conflicting with the later column-flex
+  .task-item rule that sets padding: 0 !important)
+  - Added explicit width: 100%; box-sizing: border-box on both .task-item and
+  .task-main-row
+  - Added justify-content: flex-start and flex-direction: row on .task-main-row
+  so items stay left-packed
+  - Upgraded .task-info to flex: 1 1 0% (grow to fill remaining space, shrink
+  from zero basis, properly expands between checkbox and priority badge) +
+  text-align: left
+  - Removed the var(--border-subtle) reference (it was undefined and was
+  silently making the border invalid)
+
+  Also cleaned out the orphaned .task-item.completed { opacity: 0.5 } rule since
+   there's a later opacity: 0.7 one for the same selector — the earlier one was
+  dead code.
+✻ Churned for 4m 38s
+
+❯ when iam in landing page if i put /tasks it goes to the pages without login   
+
+● Let me check the ProtectedRoute and AuthContext to find the auth gap.
+
+  Read 2 files (ctrl+o to expand)
+
+● Found it. Two culprits:
+
+  1. AuthContext.jsx lines 24-32 — there's a dev auto-login that silently signs
+  you in when running on localhost, if you have VITE_DEV_AUTO_LOGIN=true in
+  frontend/.env. That's why you see /tasks without clicking login.
+  2. Landing.jsx doesn't check auth state — even when you're already
+  authenticated (from that auto-login, or from a persisted session), visiting
+  /landing renders the landing page instead of bouncing you to /. Then when you
+  type /tasks in the URL, ProtectedRoute sees you're authenticated and lets you
+  in.
+
+  Fix: make /landing redirect to / when there's already a user session. Let me
+  check the current imports then add the redirect.
+
+  Read 1 file (ctrl+o to expand)
+
+● Now adding the auth-aware redirect to Landing.jsx:
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 17 lines, removed 1 line
+       86      const [scrolled, setScrolled] = useState(false);
+       87      const [mobileMenuOpen, setMobileMenuOpen] = useState(false
+           );
+       88      const [ctaHover, setCtaHover] = useState(null);
+       89 -    const { signIn, signUp } = useAuth();                     
+       89 +    const { user, loading: authLoading, signIn, signUp } = use
+          +Auth();                                                       
+       90      const navigate = useNavigate();
+       91  
+       92 +    // If already signed in, bounce off the landing page      
+       93      useEffect(() => {
+       94 +        if (!authLoading && user) {                           
+       95 +            navigate('/', { replace: true });                 
+       96 +        }                                                     
+       97 +    }, [user, authLoading, navigate]);                        
+       98 +                                                              
+       99 +    useEffect(() => {                                         
+      100          const onScroll = () => setScrolled(window.scrollY > 20
+           );
+      101          window.addEventListener('scroll', onScroll, { passive:
+            true });
+      102          return () => window.removeEventListener('scroll', onSc
+           roll);
+      103      }, []);
+      104  
+      105 +    // Prevent a flash of landing UI while we're still checkin
+          +g the session                                                 
+      106 +    if (authLoading || user) {                                
+      107 +        return (                                              
+      108 +            <div className="auth-loading">                    
+      109 +                <div className="auth-loading-spinner" />      
+      110 +            </div>                                            
+      111 +        );                                                    
+      112 +    }                                                         
+      113 +                                                              
+      114      const scrollTo = (href) => {
+      115          setMobileMenuOpen(false);
+      116          const id = href.replace('#', '');
+
+● Now let me also address the likely root cause — the dev auto-login silently
+  signing you in. Let me check if there's an env file that enables it.
+
+  Read 1 file, listed 1 directory (ctrl+o to expand)
+
+● Confirmed — you have dev auto-login enabled in frontend/.env.development.local
+   (VITE_DEV_AUTO_LOGIN=true). That's why on localhost you're silently signed in
+   the moment the app boots. My fix makes the Landing page aware of that:
+
+  frontend/src/pages/Landing.jsx changes
+  - Pulled user and loading from useAuth()
+  - Added a useEffect that redirects to / if there's a user session (runs once
+  auth finishes loading)
+  - Added an early-return spinner when authLoading || user is true, so you don't
+   flash the marketing page before the redirect fires
+
+  So now:
+
+  ┌─────────────────────────┬─────────────────┬────────────────────────────┐
+  │        Scenario         │     Before      │           After            │
+  ├─────────────────────────┼─────────────────┼────────────────────────────┤
+  │ Logged in (dev          │ Shows landing;  │                            │
+  │ auto-login or persisted │ /tasks then     │ Redirects straight to /    │
+  │  session), visit        │ works           │                            │
+  │ /landing                │                 │                            │
+  ├─────────────────────────┼─────────────────┼────────────────────────────┤
+  │ Not logged in, visit    │ Shows landing   │ Shows landing (unchanged)  │
+  │ /landing                │                 │                            │
+  ├─────────────────────────┼─────────────────┼────────────────────────────┤
+  │                         │                 │ Redirects to /landing      │
+  │ Not logged in, visit    │ Redirects to    │ (unchanged —               │
+  │ /tasks                  │ /landing        │ ProtectedRoute handles     │
+  │                         │                 │ that)                      │
+  └─────────────────────────┴─────────────────┴────────────────────────────┘
+
+  If you actually want to test the signed-out flow on localhost (to verify
+  ProtectedRoute works without auto-login tricking you), either:
+  - Comment out the three VITE_DEV_* lines in .env.development.local and restart
+   Vite, or
+  - Open the site in an incognito window (dev auto-login still runs there, so
+  better: just disable the flag)
+
+  On production (studyhuub.netlify.app): import.meta.env.DEV === false, so
+  auto-login never runs. The redirect I added still helps users with a persisted
+   Supabase session — visiting /landing while already signed in now bounces them
+   to / instead of showing the marketing page.
+
+✻ Sautéed for 4m 27s
+
+❯ make the herosection as the landing page                                      
+
+● I'll strip the landing page down to just the hero (plus nav + auth modal,
+  which are needed for it to function).
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(frontend\src\pages\Landing.jsx)
+  ⎿  Added 15 lines, removed 260 lines
+       1 -import { useState, useRef, useEffect } from 'react';           
+       1 +import { useState, useEffect } from 'react';                   
+       2  import { useNavigate } from 'react-router-dom';
+       3 -import { motion, AnimatePresence, useInView } from 'framer-moti
+         -on';                                                           
+       3 +import { motion, AnimatePresence } from 'framer-motion';       
+       4  import {
+       5      HiOutlineMail, HiOutlineLockClosed, HiOutlineUser, HiOutlin
+          ePhone,
+       6      HiOutlineCalendar, HiOutlineAcademicCap, HiOutlineLocationM
+          arker,
+       7 -    HiOutlineEye, HiOutlineEyeOff, HiOutlineX,                 
+       8 -    HiOutlineFolder, HiOutlineBookOpen, HiOutlineLightningBolt,
+       9 -    HiOutlineChartBar, HiOutlineClipboardCheck, HiOutlineDocume
+         -ntText,                                                        
+      10 -    HiOutlineClock, HiOutlineShieldCheck,                      
+       7 +    HiOutlineEye, HiOutlineEyeOff, HiOutlineX, HiOutlineShieldC
+         +heck,                                                          
+       8  } from 'react-icons/hi';
+       9  import { useAuth } from '../contexts/AuthContext';
+      13 -import ctaHeroImg from '../assets/cta-hero.png';               
+      10  import './Landing.css';
+      11  
+      12  /* ───── animation helpers ───── */
+     ...
+      26      exit: (d) => ({ x: d < 0 ? 60 : -60, opacity: 0 }),
+      27  };
+      28  
+      33 -function Section({ children, className = '', id }) {           
+      34 -    const ref = useRef(null);                                  
+      35 -    const inView = useInView(ref, { once: true, margin: '-80px'
+         - });                                                           
+      36 -    return (                                                   
+      37 -        <motion.section                                        
+      38 -            ref={ref}                                          
+      39 -            id={id}                                            
+      40 -            className={`lp-section ${className}`}              
+      41 -            initial="hidden"                                   
+      42 -            animate={inView ? 'visible' : 'hidden'}            
+      43 -            variants={stagger}                                 
+      44 -        >                                                      
+      45 -            {children}                                         
+      46 -        </motion.section>                                      
+      47 -    );                                                         
+      48 -}                                                              
+      49 -                                                               
+      50 -/* ───── data ───── */                                         
+      51 -const FEATURES = [                                             
+      52 -    { icon: HiOutlineFolder, title: 'Study Vault', desc: 'Organ
+         -ize notes by semester and subject. Upload, preview, and access 
+         -files anywhere.' },                                            
+      53 -    { icon: HiOutlineBookOpen, title: 'Journal', desc: 'Write d
+         -aily reflections and track your thoughts with mood logging.' },
+      54 -    { icon: HiOutlineLightningBolt, title: 'Study Zone', desc: 
+         -'Focus with Pomodoro timer-based deep work sessions.' },       
+      55 -    { icon: HiOutlineChartBar, title: 'Progress Tracking', desc
+         -: 'Visualize your study performance with streaks, charts, and b
+         -adges.' },                                                     
+      56 -    { icon: HiOutlineClipboardCheck, title: 'Smart Tasks', desc
+         -: 'Manage assignments with priorities, due dates, and subtasks.
+         -' },                                                           
+      57 -    { icon: HiOutlineDocumentText, title: 'Quick Notes', desc: 
+         -'Capture ideas instantly with categories and favorites.' },    
+      58 -];                                                             
+      59 -                                                               
+      60 -const PREVIEWS = [                                             
+      61 -    { label: 'Dashboard', gradient: 'linear-gradient(135deg, #C
+         -7B8FF, #B8D9FF)', items: ['Study streak tracker', 'Exam countdo
+         -wn', 'Quick actions', 'Achievement badges'] },                 
+      62 -    { label: 'Study Vault', gradient: 'linear-gradient(135deg, 
+         -#B8F2D8, #B8D9FF)', items: ['Semester folders', 'Subject organi
+         -zation', 'PDF & image preview', 'Drag-and-drop upload'] },     
+      63 -    { label: 'Journal', gradient: 'linear-gradient(135deg, #FFB
+         -5B5, #FFE89C)', items: ['Daily reflections', 'Mood tracking', '
+         -Calendar view', 'Rich text editor'] },                         
+      64 -    { label: 'Study Zone', gradient: 'linear-gradient(135deg, #
+         -FFE89C, #C7B8FF)', items: ['Pomodoro timer', 'Session logging',
+         - 'Focus mode', 'Study analytics'] },                           
+      65 -];                                                             
+      66 -                                                               
+      29  const SCHOOL_TYPES = ['High School', 'Senior Secondary', 'Under
+          graduate', 'Postgraduate', 'Diploma / Polytechnic', 'Other'];
+      30  
+      69 -/* ───── nav links ───── */                                    
+      70 -const NAV_LINKS = [                                            
+      71 -    { label: 'Features', href: '#features' },                  
+      72 -    { label: 'Study Vault', href: '#preview' },                
+      73 -    { label: 'Journal', href: '#preview' },                    
+      74 -    { label: 'Study Zone', href: '#preview' },                 
+      75 -];                                                             
+      76 -                                                               
+      77 -/* ───── component ───── */                                    
+      31  export default function Landing() {
+      32      const [authModal, setAuthModal] = useState(null);
+      33      const [tab, setTab] = useState('login');
+     ...
+       36      const [loading, setLoading] = useState(false);
+       37      const [error, setError] = useState('');
+       38      const [success, setSuccess] = useState('');
+       86 -    const [scrolled, setScrolled] = useState(false);          
+       87 -    const [mobileMenuOpen, setMobileMenuOpen] = useState(false
+          -);                                                            
+       88 -    const [ctaHover, setCtaHover] = useState(null);           
+       39      const { user, loading: authLoading, signIn, signUp } = use
+           Auth();
+       40      const navigate = useNavigate();
+       41  
+       92 -    // If already signed in, bounce off the landing page      
+       42      useEffect(() => {
+       43          if (!authLoading && user) {
+       44              navigate('/', { replace: true });
+       45          }
+       46      }, [user, authLoading, navigate]);
+       47  
+       99 -    useEffect(() => {                                         
+      100 -        const onScroll = () => setScrolled(window.scrollY > 20
+          -);                                                            
+      101 -        window.addEventListener('scroll', onScroll, { passive:
+          - true });                                                     
+      102 -        return () => window.removeEventListener('scroll', onSc
+          -roll);                                                        
+      103 -    }, []);                                                   
+      104 -                                                              
+      105 -    // Prevent a flash of landing UI while we're still checkin
+          -g the session                                                 
+       48      if (authLoading || user) {
+       49          return (
+       50              <div className="auth-loading">
+     ...
+       53          );
+       54      }
+       55  
+      114 -    const scrollTo = (href) => {                              
+      115 -        setMobileMenuOpen(false);                             
+      116 -        const id = href.replace('#', '');                     
+      117 -        const el = document.getElementById(id);               
+      118 -        if (el) el.scrollIntoView({ behavior: 'smooth', block:
+          - 'start' });                                                  
+      119 -    };                                                        
+      120 -                                                              
+       56      const [loginForm, setLoginForm] = useState({ email: '', pa
+           ssword: '' });
+       57      const [regForm, setRegForm] = useState({
+       58          firstName: '', lastName: '', username: '', email: '', 
+           password: '',
+     ...
+      111      const updateReg = (f, v) => setRegForm((p) => ({ ...p, [f]
+           : v }));
+      112  
+      113      return (
+      179 -        <div className="lp">                                  
+      114 +        <div className="lp lp--hero-only">                    
+      115              {/* BG */}
+      116              <div className="lp-bg">
+      117                  <div className="lp-orb lp-orb--1" />
+      118                  <div className="lp-orb lp-orb--2" />
+      119                  <div className="lp-orb lp-orb--3" />
+      185 -                <div className="lp-grid-overlay" />           
+      120              </div>
+      121  
+      188 -            {/* ══════ NAV ══════ */}                         
+      189 -            <nav className={`lp-nav ${scrolled ? 'lp-nav--scro
+          -lled' : ''}`}>                                                
+      122 +            {/* NAV */}                                       
+      123 +            <nav className="lp-nav lp-nav--minimal">          
+      124                  <span className="lp-nav-logo">Student Organize
+           r</span>
+      191 -                                                              
+      192 -                <div className="lp-nav-center">               
+      193 -                    {NAV_LINKS.map((link) => (                
+      194 -                        <button key={link.label} className="lp
+          --nav-link" onClick={() => scrollTo(link.href)}>               
+      195 -                            {link.label}                      
+      196 -                        </button>                             
+      197 -                    ))}                                       
+      198 -                </div>                                        
+      199 -                                                              
+      125                  <div className="lp-nav-actions">
+      126                      <button className="lp-nav-link lp-nav-logi
+           n" onClick={() => openAuth('login')}>Login</button>
+      127                      <motion.button
+     ...
+      133                          Get Started
+      134                      </motion.button>
+      135                  </div>
+      211 -                                                              
+      212 -                {/* Mobile hamburger */}                      
+      213 -                <button className="lp-nav-hamburger" onClick={
+          -() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">  
+      214 -                    <span className={`lp-hamburger-line ${mobi
+          -leMenuOpen ? 'open' : ''}`} />                                
+      215 -                    <span className={`lp-hamburger-line ${mobi
+          -leMenuOpen ? 'open' : ''}`} />                                
+      216 -                    <span className={`lp-hamburger-line ${mobi
+          -leMenuOpen ? 'open' : ''}`} />                                
+      217 -                </button>                                     
+      218 -                                                              
+      219 -                {/* Mobile dropdown */}                       
+      220 -                <AnimatePresence>                             
+      221 -                    {mobileMenuOpen && (                      
+      222 -                        <motion.div                           
+      223 -                            className="lp-nav-mobile"         
+      224 -                            initial={{ opacity: 0, y: -10 }}  
+      225 -                            animate={{ opacity: 1, y: 0 }}    
+      226 -                            exit={{ opacity: 0, y: -10 }}     
+      227 -                            transition={{ duration: 0.2 }}    
+      228 -                        >                                     
+      229 -                            {NAV_LINKS.map((link) => (        
+      230 -                                <button key={link.label} class
+          -Name="lp-nav-mobile-link" onClick={() => scrollTo(link.href)}>
+      231 -                                    {link.label}              
+      232 -                                </button>                     
+      233 -                            ))}                               
+      234 -                            <div className="lp-nav-mobile-divi
+          -der" />                                                       
+      235 -                            <button className="lp-nav-mobile-l
+          -ink" onClick={() => { setMobileMenuOpen(false); openAuth('logi
+          -n'); }}>Login</button>                                        
+      236 -                            <button className="lp-nav-mobile-l
+          -ink lp-nav-mobile-cta" onClick={() => { setMobileMenuOpen(fals
+          -e); openAuth('register'); }}>Get Started</button>             
+      237 -                        </motion.div>                         
+      238 -                    )}                                        
+      239 -                </AnimatePresence>                            
+      136              </nav>
+      137  
+      242 -            {/* ══════ HERO ══════ */}                        
+      243 -            <Section className="lp-hero">                     
+      138 +            {/* HERO (the full landing page now) */}          
+      139 +            <motion.section                                   
+      140 +                className="lp-hero lp-hero--full"             
+      141 +                initial="hidden"                              
+      142 +                animate="visible"                             
+      143 +                variants={stagger}                            
+      144 +            >                                                 
+      145                  <motion.div className="lp-hero-badge" variants
+           ={fadeUp} custom={0}>
+      146                      <HiOutlineShieldCheck size={14} />
+      147                      <span>Free forever for students</span>
+     ...
+      171                      </motion.button>
+      172                  </motion.div>
+      173                  <motion.div className="lp-hero-glow" variants=
+           {fadeUp} custom={4} />
+      273 -            </Section>                                        
+      174 +            </motion.section>                                 
+      175  
+      275 -            {/* ══════ FEATURES ══════ */}                    
+      276 -            <Section className="lp-features" id="features">   
+      277 -                <motion.span className="lp-label" variants={fa
+          -deUp}>Features</motion.span>                                  
+      278 -                <motion.h2 className="lp-heading" variants={fa
+          -deUp} custom={1}>                                             
+      279 -                    Everything you need to ace your studies   
+      280 -                </motion.h2>                                  
+      281 -                <motion.p className="lp-subheading" variants={
+          -fadeUp} custom={2}>                                           
+      282 -                    Built by students, for students. Every too
+          -l you wish you had.                                           
+      283 -                </motion.p>                                   
+      284 -                <div className="lp-features-grid">            
+      285 -                    {FEATURES.map((f, i) => (                 
+      286 -                        <motion.div                           
+      287 -                            key={f.title}                     
+      288 -                            className="lp-feature-card"       
+      289 -                            variants={fadeUp}                 
+      290 -                            custom={i * 0.5}                  
+      291 -                            whileHover={{ y: -4 }}            
+      292 -                        >                                     
+      293 -                            <div className="lp-feature-icon"> 
+      294 -                                <f.icon size={22} />          
+      295 -                            </div>                            
+      296 -                            <h3>{f.title}</h3>                
+      297 -                            <p>{f.desc}</p>                   
+      298 -                        </motion.div>                         
+      299 -                    ))}                                       
+      300 -                </div>                                        
+      301 -            </Section>                                        
+      302 -                                                              
+      303 -            {/* ══════ WHY ══════ */}                         
+      304 -            <Section className="lp-why">                      
+      305 -                <motion.h2 className="lp-why-title" variants={
+          -fadeUp}>                                                      
+      306 -                    Stop feeling lost<br />in your studies.   
+      307 -                </motion.h2>                                  
+      308 -                <motion.p className="lp-why-sub" variants={fad
+          -eUp} custom={1}>                                              
+      309 -                    Stay organized. Stay focused. Stay ahead. 
+      310 -                </motion.p>                                   
+      311 -                <motion.div className="lp-why-stats" variants=
+          -{fadeUp} custom={2}>                                          
+      312 -                    {[                                        
+      313 -                        { icon: HiOutlineClock, val: '10x', la
+          -bel: 'More productive' },                                     
+      314 -                        { icon: HiOutlineChartBar, val: '100%'
+          -, label: 'Free to use' },                                     
+      315 -                        { icon: HiOutlineShieldCheck, val: 'Se
+          -cure', label: 'Your data, your control' },                    
+      316 -                    ].map((s) => (                            
+      317 -                        <div key={s.label} className="lp-why-s
+          -tat">                                                         
+      318 -                            <s.icon size={20} />              
+      319 -                            <span className="lp-why-stat-val">
+          -{s.val}</span>                                                
+      320 -                            <span className="lp-why-stat-label
+          -">{s.label}</span>                                            
+      321 -                        </div>                                
+      322 -                    ))}                                       
+      323 -                </motion.div>                                 
+      324 -            </Section>                                        
+      325 -                                                              
+      326 -            {/* ══════ APP PREVIEW ══════ */}                 
+      327 -            <Section className="lp-preview" id="preview">     
+      328 -                <motion.span className="lp-label" variants={fa
+          -deUp}>Preview</motion.span>                                   
+      329 -                <motion.h2 className="lp-heading" variants={fa
+          -deUp} custom={1}>                                             
+      330 -                    A glimpse of what's inside                
+      331 -                </motion.h2>                                  
+      332 -                <div className="lp-preview-grid">             
+      333 -                    {PREVIEWS.map((p, i) => (                 
+      334 -                        <motion.div                           
+      335 -                            key={p.label}                     
+      336 -                            className="lp-preview-card"       
+      337 -                            variants={fadeUp}                 
+      338 -                            custom={i * 0.5}                  
+      339 -                            whileHover={{ y: -5, scale: 1.02 }
+          -}                                                             
+      340 -                            style={{ background: p.gradient }}
+      341 -                        >                                     
+      342 -                            <h4 className="lp-preview-label">{
+          -p.label}</h4>                                                 
+      343 -                            <ul className="lp-preview-list">  
+      344 -                                {p.items.map((item) => (      
+      345 -                                    <li key={item}><span class
+          -Name="lp-preview-dot" />{item}</li>                           
+      346 -                                ))}                           
+      347 -                            </ul>                             
+      348 -                        </motion.div>                         
+      349 -                    ))}                                       
+      350 -                </div>                                        
+      351 -            </Section>                                        
+      352 -                                                              
+      353 -            {/* ══════ CTA HERO ══════ */}                    
+      354 -            <Section className={`lp-cta-hero ${ctaHover === 'l
+          -ogin' ? 'lp-cta-hero--blue' : ctaHover === 'register' ? 'lp-ct
+          -a-hero--red' : ''}`}>                                         
+      355 -                <div className="lp-cta-hero-glow" />          
+      356 -                <motion.div className="lp-cta-hero-wrapper" va
+          -riants={fadeUp}>                                              
+      357 -                    <img                                      
+      358 -                        src={ctaHeroImg}                      
+      359 -                        alt="Choose your path"                
+      360 -                        className="lp-cta-hero-img"           
+      361 -                    />                                        
+      362 -                    <div className="lp-cta-hero-buttons">     
+      363 -                        <motion.button                        
+      364 -                            className="lp-cta-pill lp-cta-pill
+          ---left"                                                       
+      365 -                            onClick={() => openAuth('login')} 
+      366 -                            onMouseEnter={() => setCtaHover('l
+          -ogin')}                                                       
+      367 -                            onMouseLeave={() => setCtaHover(nu
+          -ll)}                                                          
+      368 -                            whileTap={{ scale: 0.96 }}        
+      369 -                        >                                     
+      370 -                            Login                             
+      371 -                        </motion.button>                      
+      372 -                        <motion.button                        
+      373 -                            className="lp-cta-pill lp-cta-pill
+          ---right"                                                      
+      374 -                            onClick={() => openAuth('register'
+          -)}                                                            
+      375 -                            onMouseEnter={() => setCtaHover('r
+          -egister')}                                                    
+      376 -                            onMouseLeave={() => setCtaHover(nu
+          -ll)}                                                          
+      377 -                            whileTap={{ scale: 0.96 }}        
+      378 -                        >                                     
+      379 -                            Create Account                    
+      380 -                        </motion.button>                      
+      381 -                    </div>                                    
+      382 -                </motion.div>                                 
+      383 -            </Section>                                        
+      384 -                                                              
+      385 -            {/* ══════ FOOTER ══════ */}                      
+      386 -            <footer className="lp-footer">                    
+      387 -                <div className="lp-footer-inner">             
+      388 -                    <div className="lp-footer-brand">         
+      389 -                        <span className="lp-footer-logo">Stude
+          -nt Organizer</span>                                           
+      390 -                        <p className="lp-footer-desc">        
+      391 -                            Your all-in-one study companion. O
+          -rganize notes, track progress, and stay focused.              
+      392 -                        </p>                                  
+      393 -                    </div>                                    
+      394 -                                                              
+      395 -                    <div className="lp-footer-col">           
+      396 -                        <h4 className="lp-footer-heading">Prod
+          -uct</h4>                                                      
+      397 -                        <button onClick={() => scrollTo('#feat
+          -ures')}>Features</button>                                     
+      398 -                        <button onClick={() => scrollTo('#prev
+          -iew')}>Study Vault</button>                                   
+      399 -                        <button onClick={() => scrollTo('#prev
+          -iew')}>Journal</button>                                       
+      400 -                        <button onClick={() => scrollTo('#prev
+          -iew')}>Study Zone</button>                                    
+      401 -                    </div>                                    
+      402 -                                                              
+      403 -                    <div className="lp-footer-col">           
+      404 -                        <h4 className="lp-footer-heading">Reso
+          -urces</h4>                                                    
+      405 -                        <button onClick={() => openAuth('regis
+          -ter')}>Get Started</button>                                   
+      406 -                        <button onClick={() => openAuth('login
+          -')}>Login</button>                                            
+      407 -                    </div>                                    
+      408 -                                                              
+      409 -                    <div className="lp-footer-col">           
+      410 -                        <h4 className="lp-footer-heading">Abou
+          -t</h4>                                                        
+      411 -                        <span className="lp-footer-text">Built
+          - for students,</span>                                         
+      412 -                        <span className="lp-footer-text">by st
+          -udents.</span>                                                
+      413 -                    </div>                                    
+      414 -                </div>                                        
+      415 -                                                              
+      416 -                <div className="lp-footer-bottom">            
+      417 -                    <span>&copy; 2026 Student Organizer. All r
+          -ights reserved.</span>                                        
+      418 -                </div>                                        
+      419 -            </footer>                                         
+      420 -                                                              
+      421 -            {/* ══════ AUTH MODAL ══════ */}                  
+      176 +            {/* AUTH MODAL */}                                
+      177              <AnimatePresence>
+      178                  {authModal && (
+      179                      <motion.div
+
+● Found a Rules-of-Hooks violation I introduced — the early return sits between
+  useState calls. Let me fix the order:
+
+● Update(frontend\src\pages\Landing.jsx)
+  ⎿  Added 5 lines, removed 6 lines
+      36      const [loading, setLoading] = useState(false);
+      37      const [error, setError] = useState('');
+      38      const [success, setSuccess] = useState('');
+      39 +    const [loginForm, setLoginForm] = useState({ email: '', pas
+         +sword: '' });                                                  
+      40 +    const [regForm, setRegForm] = useState({                   
+      41 +        firstName: '', lastName: '', username: '', email: '', p
+         +assword: '',                                                   
+      42 +        dob: '', schoolType: '', schoolName: '', address: '', p
+         +hone: '',                                                      
+      43 +    });                                                        
+      44      const { user, loading: authLoading, signIn, signUp } = useA
+          uth();
+      45      const navigate = useNavigate();
+      46  
+     ...
+      58          );
+      59      }
+      60  
+      56 -    const [loginForm, setLoginForm] = useState({ email: '', pas
+         -sword: '' });                                                  
+      57 -    const [regForm, setRegForm] = useState({                   
+      58 -        firstName: '', lastName: '', username: '', email: '', p
+         -assword: '',                                                   
+      59 -        dob: '', schoolType: '', schoolName: '', address: '', p
+         -hone: '',                                                      
+      60 -    });                                                        
+      61 -                                                               
+      61      const openAuth = (mode) => {
+      62          setTab(mode);
+      63          setDirection(mode === 'register' ? 1 : -1);
+
+● Now tweaking the CSS so the hero fills the viewport and the nav stays minimal:
+
+● Update(frontend\src\pages\Landing.css)
+  ⎿  Added 21 lines
+      223      align-items: center;
+      224  }
+      225  
+      226 +/* Hero-only landing page: center hero in viewport */         
+      227 +.lp--hero-only {                                              
+      228 +    min-height: 100vh;                                        
+      229 +    display: flex;                                            
+      230 +    flex-direction: column;                                   
+      231 +}                                                             
+      232 +                                                              
+      233 +.lp-hero--full {                                              
+      234 +    flex: 1;                                                  
+      235 +    min-height: calc(100vh - 80px);                           
+      236 +    justify-content: center;                                  
+      237 +    padding-top: 2rem;                                        
+      238 +    padding-bottom: 2rem;                                     
+      239 +}                                                             
+      240 +                                                              
+      241 +/* Minimal nav: just logo + auth buttons, no center links */  
+      242 +.lp-nav--minimal { padding: 1rem 2.5rem; }                    
+      243 +@media (max-width: 520px) {                                   
+      244 +    .lp-nav--minimal { padding: 0.85rem 1.25rem; }            
+      245 +}                                                             
+      246 +                                                              
+      247  .lp-hero-badge {
+      248      display: inline-flex;
+      249      align-items: center;
+
+● Also need to keep the auth buttons visible on mobile (the old responsive CSS
+  hid them in favor of a hamburger menu, which is no longer there):
+
+● Update(frontend\src\pages\Landing.css)
+  ⎿  Added 4 lines
+      1089      .lp-nav-hamburger { display: flex; }
+      1090      .lp-nav-actions { display: none; }
+      1091  
+      1092 +    /* Hero-only nav keeps the actions visible since there's 
+           +no hamburger/menu */                                         
+      1093 +    .lp-nav--minimal .lp-nav-hamburger { display: none; }    
+      1094 +    .lp-nav--minimal .lp-nav-actions { display: flex; }      
+      1095 +                                                             
+      1096      .lp-footer-inner {
+      1097          grid-template-columns: 1fr 1fr;
+      1098          gap: 2rem;
+
+● Done. The landing page is now hero-only:
+
+  Landing.jsx — trimmed to just:
+  - Minimal nav (logo + Login + Get Started)
+  - Hero (badge "Free forever for students", "Student Organizer" title,
+  subtitle, two CTA buttons, soft glow)
+  - Auth modal (unchanged — pops up on Login/Get Started click)
+
+  Removed: Features grid, Why section, Preview cards, CTA hero with image,
+  Footer, scroll-triggered nav background change, mobile hamburger menu,
+  scroll-based Section wrapper component, useInView, all related constants
+  (FEATURES, PREVIEWS, NAV_LINKS), and the ctaHeroImg asset import.
+
+  Landing.css additions:
+  - .lp--hero-only makes the page flex-column, full viewport
+  - .lp-hero--full flexes to fill, vertically centers hero content
+  - .lp-nav--minimal trimmed padding, no center links
+  - Mobile override: keeps auth buttons visible on the minimal nav (since
+  there's no hamburger anymore)
+
+  The existing CSS rules for the removed sections (.lp-features, .lp-why,
+  .lp-preview, .lp-cta-hero, .lp-footer) are now dead but harmless — happy to
+  prune them if you want the file cleaner.
+
+✻ Cooked for 1m 58s
+
+❯ how to depoly the project now i mean redeploy                                 
+
+● Bash(git status)
+  ⎿  On branch main
+     Your branch is up to date with 'origin/main'.
+     … +15 lines (ctrl+o to expand)
+● Here's the redeploy flow. Since both Netlify (frontend) and Render (backend)
+  auto-deploy from GitHub main, all you need to do is commit and push.
+
+  Current state
+
+  Modified:
+    frontend/src/pages/Journal.jsx        (missing icon import fix)
+    frontend/src/pages/Landing.jsx        (hero-only + auth redirect)
+    frontend/src/pages/Landing.css        (comic theme + hero-only CSS)
+    frontend/src/pages/Tasks.jsx          (5 crash bugs fixed)
+    frontend/src/pages/Tasks.css          (checkbox + alignment)
+
+  Untracked:
+    SOP.md                                 (the ops doc)
+
+  None of these touch backend files, so only Netlify will actually rebuild.
+  Render will pick up the no-op push but won't find anything to redeploy in
+  backend/.
+
+  Steps
+
+  1. Review what will deploy (optional but smart):
+  git diff frontend/src/pages/
+  2. Stage the files:
+  git add frontend/src/pages/Journal.jsx \
+          frontend/src/pages/Landing.jsx frontend/src/pages/Landing.css \
+          frontend/src/pages/Tasks.jsx frontend/src/pages/Tasks.css \
+          SOP.md
+  2. (Drop SOP.md from that list if you'd rather not commit it yet.)
+  3. Commit with a descriptive message:
+  git commit -m "Fix Tasks/Journal crashes, hero-only landing, auth redirect, 
+  SOP doc"
+  4. Push to main:
+  git push origin main
+  5. Watch the deploys (this is the "redeploy" happening):
+    - Netlify: https://app.netlify.com → your site → Deploys tab. You should see
+   a new build kick off within ~30s. Build takes ~1–3 min.
+    - Render: https://dashboard.render.com → your backend service → Events /
+  Logs. It'll show "no changes to backend/" and skip, or redeploy anyway —
+  harmless either way.
+  6. Verify in production once Netlify turns green:
+    - https://studyhuub.netlify.app/ — should show the new hero-only landing
+  page
+    - https://studyhuub.netlify.app/tasks — should render tasks with the new
+  checkbox
+    - https://studyhuub.netlify.app/journal/2026-04-23 — should load your saved
+  entry
+
+  If something fails
+
+  Symptom: Netlify build fails with "command not found" or similar
+  Fix: Check Netlify build log — usually an env var issue. Make sure
+    VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_URL are set in Site
+    settings → Environment variables.
+  ────────────────────────────────────────
+  Symptom: Site loads but API calls 404 / CORS error
+  Fix: Render's ALLOWED_ORIGINS env var must include
+    https://studyhuub.netlify.app. Update and redeploy the Render service.
+  ────────────────────────────────────────
+  Symptom: Page still shows old UI after deploy
+  Fix: Hard-reload: Ctrl+Shift+R (clears the cached bundle). Or browse incognito
+
+    to confirm.
+  ────────────────────────────────────────
+  Symptom: Deploy didn't trigger
+  Fix: Check that the Netlify site's "Build hooks" / "Continuous deployment" is
+    connected to the right GitHub repo + main branch.
+
+  Want me to run the commit + push for you? (It's a one-way action so I'll wait
+  for your yes before touching it.)
+
+✻ Crunched for 33s
+
+※ recap: You're redeploying the Student Organizer app after fixes to Tasks, Journal, and Landing pages. Next: commit the 5 modified frontend files plus SOP.md and run git push origin main to trigger Netlify's auto-deploy. (disable recaps in /config)

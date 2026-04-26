@@ -76,7 +76,18 @@ export function AppProvider({ children }) {
                 })));
                 setSubjects(subjectsData);
 
-                if (userData.streak) setStreak(userData.streak);
+                if (userData.streak) {
+                    const loaded = { ...userData.streak };
+                    if (loaded.lastStudyDate && loaded.current > 0) {
+                        const today = new Date().toISOString().split('T')[0];
+                        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                        if (loaded.lastStudyDate !== today && loaded.lastStudyDate !== yesterday) {
+                            loaded.current = 0;
+                            api.saveUserData('streak', loaded).catch(console.error);
+                        }
+                    }
+                    setStreak(loaded);
+                }
                 if (userData.badges) setBadges(userData.badges);
                 if (userData.totalStudyMinutes != null) setTotalStudyMinutes(userData.totalStudyMinutes);
             } catch (err) {
