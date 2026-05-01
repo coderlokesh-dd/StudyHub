@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { evaluateBadges, generateId } from '../utils/helpers';
+import { evaluateBadges } from '../utils/helpers';
 import * as api from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const AppContext = createContext();
 
@@ -17,6 +18,7 @@ const DEFAULT_BADGES = [
 ];
 
 export function AppProvider({ children }) {
+    const { user } = useAuth();
     const [notes, setNotes] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [journal, setJournal] = useState([]);
@@ -30,8 +32,16 @@ export function AppProvider({ children }) {
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Load all data from backend on mount
+    // Load all data when the auth user changes (sign-in/sign-out re-runs this)
     useEffect(() => {
+        if (!user) {
+            setNotes([]); setTasks([]); setJournal([]); setStudySessions([]);
+            setStudyLog([]); setStreak(DEFAULT_STREAK); setBadges(DEFAULT_BADGES);
+            setTotalStudyMinutes(0); setExams([]); setSubtasks([]); setSubjects([]);
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
         async function loadAll() {
             try {
                 const [notesData, tasksData, journalData, sessionsData, logData, userData, examsData, subtasksData, subjectsData] = await Promise.all([
@@ -97,7 +107,7 @@ export function AppProvider({ children }) {
             }
         }
         loadAll();
-    }, []);
+    }, [user?.id]);
 
     // Re-evaluate badges
     useEffect(() => {
@@ -112,10 +122,11 @@ export function AppProvider({ children }) {
 
     // ---------- NOTES ----------
     const addNote = useCallback(async (note) => {
-        const now = new Date().toISOString();
-        const newNote = { id: generateId(), ...note, favorite: false };
-        await api.createNote(newNote);
-        setNotes(prev => [{ ...newNote, createdAt: now, updatedAt: now }, ...prev]);
+        const saved = await api.createNote(note);
+        setNotes(prev => [{
+            id: saved.id, title: saved.title, content: saved.content, category: saved.category,
+            favorite: saved.favorite, createdAt: saved.created_at, updatedAt: saved.updated_at,
+        }, ...prev]);
     }, []);
 
     const updateNote = useCallback(async (id, updates) => {
@@ -138,9 +149,12 @@ export function AppProvider({ children }) {
 
     // ---------- TASKS ----------
     const addTask = useCallback(async (task) => {
-        const newTask = { id: generateId(), ...task };
-        await api.createTask(newTask);
-        setTasks(prev => [{ ...newTask, completed: false, createdAt: new Date().toISOString() }, ...prev]);
+        const saved = await api.createTask(task);
+        setTasks(prev => [{
+            id: saved.id, title: saved.title, subject: saved.subject, priority: saved.priority,
+            dueDate: saved.due_date, completed: saved.completed, completedAt: saved.completed_at,
+            createdAt: saved.created_at,
+        }, ...prev]);
     }, []);
 
     const updateTaskFn = useCallback(async (id, updates) => {
@@ -207,17 +221,21 @@ export function AppProvider({ children }) {
     }, [journal]);
 
     const saveJournalEntryFn = useCallback(async (date, { title, content, mood }) => {
-        const existing = journal.find(j => j.date === date);
-        const id = existing ? existing.id : 'j-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-        await api.saveJournalEntry({ id, date, title, content, mood });
-
-        const now = new Date().toISOString();
-        if (existing) {
-            setJournal(prev => prev.map(j => j.date === date ? { ...j, title, content, mood, updatedAt: now } : j));
-        } else {
-            setJournal(prev => [{ id, date, title, content, mood, createdAt: now, updatedAt: now }, ...prev]);
-        }
-    }, [journal]);
+        const saved = await api.saveJournalEntry({ date, title, content, mood });
+        const mapped = {
+            id: saved.id, date: saved.date, title: saved.title, content: saved.content,
+            mood: saved.mood, createdAt: saved.created_at, updatedAt: saved.updated_at,
+        };
+        setJournal(prev => {
+            const idx = prev.findIndex(j => j.date === date);
+            if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = mapped;
+                return next;
+            }
+            return [mapped, ...prev];
+        });
+    }, []);
 
     const deleteJournalEntryFn = useCallback(async (date) => {
         await api.deleteJournalEntry(date);
@@ -226,9 +244,11 @@ export function AppProvider({ children }) {
 
     // ---------- EXAMS ----------
     const addExam = useCallback(async (exam) => {
-        const newExam = { id: generateId(), ...exam };
-        await api.createExam({ ...newExam, exam_date: newExam.examDate });
-        setExams(prev => [...prev, { ...newExam, createdAt: new Date().toISOString() }]);
+        const saved = await api.createExam({ ...exam, exam_date: exam.examDate });
+        setExams(prev => [...prev, {
+            id: saved.id, title: saved.title, subject: saved.subject,
+            examDate: saved.exam_date, color: saved.color, createdAt: saved.created_at,
+        }]);
     }, []);
 
     const deleteExamFn = useCallback(async (id) => {
@@ -238,9 +258,11 @@ export function AppProvider({ children }) {
 
     // ---------- SUBTASKS ----------
     const addSubtask = useCallback(async (taskId, title) => {
-        const id = generateId();
-        await api.createSubtask(taskId, { id, title });
-        setSubtasks(prev => [...prev, { id, taskId, title, completed: false, createdAt: new Date().toISOString() }]);
+        const saved = await api.createSubtask(taskId, { title });
+        setSubtasks(prev => [...prev, {
+            id: saved.id, taskId: saved.task_id, title: saved.title,
+            completed: saved.completed, createdAt: saved.created_at,
+        }]);
     }, []);
 
     const toggleSubtask = useCallback(async (id) => {

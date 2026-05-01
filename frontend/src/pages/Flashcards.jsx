@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlinePlus, HiOutlineTrash, HiArrowLeft, HiOutlineRefresh, HiCheck, HiX } from 'react-icons/hi';
 import * as api from '../utils/api';
-import { generateId } from '../utils/helpers';
 import Modal from '../components/Modal';
 import './Flashcards.css';
 
@@ -65,9 +64,8 @@ export default function Flashcards() {
 
     const handleCreateDeck = async () => {
         if (!form.title.trim()) return;
-        const deck = { id: generateId(), title: form.title, subject: form.subject };
-        await api.createFlashcardDeck(deck);
-        setDecks(prev => [deck, ...prev]);
+        const created = await api.createFlashcardDeck({ title: form.title, subject: form.subject });
+        setDecks(prev => [created, ...prev]);
         setForm({ title: '', subject: '', front: '', back: '' });
         setModalOpen(false);
     };
@@ -79,8 +77,7 @@ export default function Flashcards() {
 
     const handleCreateCard = async () => {
         if (!form.front.trim() || !form.back.trim()) return;
-        const card = { id: generateId(), front: form.front, back: form.back };
-        const created = await api.createFlashcard(selectedDeck.id, card);
+        const created = await api.createFlashcard(selectedDeck.id, { front: form.front, back: form.back });
         setCards(prev => [created, ...prev]);
         setForm({ title: '', subject: '', front: '', back: '' });
         setModalOpen(false);

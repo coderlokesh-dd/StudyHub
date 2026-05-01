@@ -32,7 +32,6 @@
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-2xl);
-    backdrop-filter: blur(12px);
 }
 
 .journal-list-empty .empty-icon {

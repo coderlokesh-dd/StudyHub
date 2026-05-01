@@ -42,69 +42,69 @@ const NAV_LINKS = [
 const FEATURES = [
     {
         icon: HiOutlineClipboardCheck,
-        title: 'Smart Tasks',
-        desc: 'Plan assignments with priorities, due dates, and nested subtasks. Track progress with a live completion bar.',
+        title: 'Tasks',
+        desc: 'Priorities, due dates, and nested subtasks. Live completion bar.',
         tone: 'lavender',
     },
     {
         icon: HiOutlineDocumentText,
-        title: 'Quick Notes',
-        desc: 'Capture ideas instantly with categories, favorites, and full-text search across your entire library.',
+        title: 'Notes',
+        desc: 'Categories, favorites, and full-text search.',
         tone: 'coral',
     },
     {
         icon: HiOutlineBookOpen,
-        title: 'Daily Journal',
-        desc: 'Reflect on your day with mood tracking. One entry per date, calendar view, and rich formatting.',
+        title: 'Journal',
+        desc: 'One entry per date with mood tracking and a calendar view.',
         tone: 'butter',
     },
     {
         icon: HiOutlineLightningBolt,
         title: 'Study Zone',
-        desc: 'Three timer modes — Deep Focus, Pomodoro, and Casual. Sessions persist across pages so you stay locked in.',
+        desc: 'Three timer modes: Deep Focus, Pomodoro, and Casual. Sessions persist across pages.',
         tone: 'mint',
     },
     {
         icon: HiOutlineCalendar,
         title: 'Timetable',
-        desc: 'Build your weekly schedule with color-coded blocks. See your full week at a glance with location and time details.',
+        desc: 'Color-coded weekly schedule with location and time details.',
         tone: 'sky',
     },
     {
         icon: HiOutlineFolder,
         title: 'Study Vault',
-        desc: 'Upload PDFs and images organized by semester and subject. Preview anywhere, never lose a file again.',
+        desc: 'Upload PDFs and images organized by semester and subject. In-app preview.',
         tone: 'butter',
     },
 ];
 
 const STEPS = [
-    { num: '01', title: 'Create your account', desc: 'Sign up free in seconds. No credit card, no trials, no catches.' },
-    { num: '02', title: 'Set up your study life', desc: 'Add tasks, drop in your timetable and exam dates, then upload your study materials to the vault.' },
-    { num: '03', title: 'Stay focused & track wins', desc: 'Run focus sessions, hit your streaks, and watch your progress grow on the dashboard.' },
+    { num: '01', title: 'Create your account', desc: 'Sign up. No credit card, no trial.' },
+    { num: '02', title: 'Set up your study tools', desc: 'Add tasks, your timetable, exam dates, and study materials.' },
+    { num: '03', title: 'Track your time', desc: 'Run focus sessions and check your progress on the dashboard.' },
 ];
 
 const HIGHLIGHTS = [
     {
         label: 'Study Vault',
-        title: 'every file, exactly where you need it',
-        desc: 'Organize materials by semester and subject. Drag-and-drop uploads, instant PDF preview, and a clean folder hierarchy mean you stop wasting time hunting for last week\'s lecture notes.',
+        title: 'files organized by semester',
+        desc: 'Materials are organized by semester and subject. Drag-and-drop upload and in-app PDF preview.',
         bullets: ['Semester → subject hierarchy', 'PDF & image preview', 'Drag-and-drop uploads', 'Cloud-synced via Supabase'],
         tone: 'lavender',
         icon: HiOutlineFolder,
     },
     {
         label: 'Study Zone',
-        title: 'deep focus, on demand',
-        desc: 'Three timer modes designed for how you actually study. Switch between fullscreen Deep Focus, classic Pomodoro cycles, or a Casual stopwatch — your active session keeps running while you browse.',
+        title: 'three timer modes',
+        desc: 'Switch between fullscreen Deep Focus, Pomodoro cycles, or a Casual stopwatch. Active session keeps running while you browse.',
         bullets: ['Deep Focus (fullscreen)', 'Pomodoro (configurable)', 'Casual stopwatch', 'Floating timer pill'],
         tone: 'mint',
         icon: HiOutlineLightningBolt,
     },
     {
         label: 'Progress & Streaks',
-        title: 'see yourself getting better',
-        desc: 'Beautiful charts of your weekly hours and subject breakdown. Streak tracking and achievement badges turn consistency into something you can actually feel.',
+        title: 'charts and streaks',
+        desc: 'Weekly hours and subject breakdown. Streak tracking and achievement badges.',
         bullets: ['Weekly hour breakdown', 'Subject-level analytics', 'Streak tracking', 'Achievement badges'],
         tone: 'butter',
         icon: HiOutlineChartBar,
@@ -114,23 +114,23 @@ const HIGHLIGHTS = [
 const FAQS = [
     {
         q: 'Is it really free?',
-        a: 'Yes. Student Organizer is free forever for students — no credit card, no trial period, no hidden tiers. We built this for ourselves first.',
+        a: 'Yes. No credit card, no trial period, no paid tier.',
     },
     {
         q: 'Will my data stay private?',
-        a: 'Your account is secured with Supabase Auth, files live in your private vault, and we never share or sell anything. You can export or delete your data at any time.',
+        a: 'Auth uses Supabase. Files live in your private vault. We don\'t share or sell data, and you can delete your account on request.',
     },
     {
         q: 'Does it work on my phone?',
-        a: 'Yep. The full app works in any modern mobile browser, with a bottom nav bar, mobile-friendly modals, and a floating timer that follows you between pages.',
+        a: 'Yes. The full app works in any modern mobile browser, with a bottom nav and a floating timer that follows you between pages.',
     },
     {
         q: 'What happens to my study sessions if I close the tab?',
-        a: 'Save your session before closing. Active timers are tracked in memory while the app is open, but completed sessions are persisted to your account so streaks and totals stick.',
+        a: 'Save your session before closing. Active timers run in memory; completed sessions are saved to your account.',
     },
     {
         q: 'Can I use it for any subject?',
-        a: 'Absolutely. Tasks, notes, timetable, and the vault are all subject-tagged so it scales whether you\'re in high school, college, or grad school.',
+        a: 'Yes. Tasks, notes, timetable, and the vault are all subject-tagged.',
     },
 ];
 
@@ -324,16 +324,15 @@ export default function Landing() {
             <Reveal id="hero" className="lp-section lp-hero">
                 <motion.div className="lp-hero-badge" variants={fadeUp} custom={0}>
                     <HiOutlineShieldCheck size={14} />
-                    <span>Free forever for students</span>
+                    <span>Free for students</span>
                 </motion.div>
 
                 <motion.h1 className="lp-hero-title" variants={fadeUp} custom={1}>
-                    your study life,<br />finally <span className="lp-hero-accent">organized</span>.
+                    your study tools,<br /><span className="lp-hero-accent">in one place</span>.
                 </motion.h1>
 
                 <motion.p className="lp-hero-sub" variants={fadeUp} custom={2}>
-                    Tasks, notes, journal, focus timers, timetable, and a study vault — every tool you wish you had,
-                    built into one beautifully simple workspace.
+                    Tasks, notes, journal, focus timers, timetable, and a study vault. All in one app.
                 </motion.p>
 
                 <motion.div className="lp-hero-btns" variants={fadeUp} custom={3}>
@@ -343,7 +342,7 @@ export default function Landing() {
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                     >
-                        Get Started — it's free
+                        Sign up free
                         <HiOutlineArrowRight size={18} style={{ marginLeft: 6 }} />
                     </motion.button>
                     <motion.button
@@ -358,9 +357,9 @@ export default function Landing() {
 
                 <motion.div className="lp-hero-trust" variants={fadeUp} custom={4}>
                     {[
-                        { icon: HiOutlineSparkles, val: '9+', label: 'productivity tools' },
-                        { icon: HiOutlineHeart, val: '100%', label: 'free, forever' },
-                        { icon: HiOutlineGlobe, val: 'Web', label: 'anywhere, any device' },
+                        { icon: HiOutlineSparkles, val: '9+', label: 'tools' },
+                        { icon: HiOutlineHeart, val: 'Free', label: 'no paid tier' },
+                        { icon: HiOutlineGlobe, val: 'Web', label: 'any browser' },
                     ].map((s, i) => (
                         <div key={s.label} className={`lp-trust-card lp-trust-card--${i}`}>
                             <s.icon size={22} />
@@ -377,10 +376,10 @@ export default function Landing() {
             <Reveal id="features" className="lp-section lp-features">
                 <motion.span className="lp-label" variants={fadeUp}>Features</motion.span>
                 <motion.h2 className="lp-heading" variants={fadeUp} custom={1}>
-                    everything you need to <span className="lp-heading-accent">ace it</span>.
+                    <span className="lp-heading-accent">what's inside</span>.
                 </motion.h2>
                 <motion.p className="lp-subheading" variants={fadeUp} custom={2}>
-                    Built by students, for students. Every tool you actually use, none of the ones you don't.
+                    Six tools, one app.
                 </motion.p>
 
                 <div className="lp-features-grid">
@@ -406,10 +405,10 @@ export default function Landing() {
             <Reveal id="how" className="lp-section lp-how">
                 <motion.span className="lp-label" variants={fadeUp}>How it works</motion.span>
                 <motion.h2 className="lp-heading" variants={fadeUp} custom={1}>
-                    three steps. that's it.
+                    three steps.
                 </motion.h2>
                 <motion.p className="lp-subheading" variants={fadeUp} custom={2}>
-                    No onboarding tour, no setup wizard. Just sign up and start.
+                    No setup wizard. Sign up and start.
                 </motion.p>
 
                 <div className="lp-steps">
@@ -522,9 +521,9 @@ export default function Landing() {
                         <span className="lp-cta-shape lp-cta-shape--2" />
                         <span className="lp-cta-shape lp-cta-shape--3" />
                     </div>
-                    <h2 className="lp-cta-title">ready to get organized?</h2>
+                    <h2 className="lp-cta-title">ready to start?</h2>
                     <p className="lp-cta-sub">
-                        Sign up in seconds. Start studying smarter today.
+                        Sign up free. No credit card.
                     </p>
                     <div className="lp-cta-btns">
                         <motion.button
@@ -554,11 +553,8 @@ export default function Landing() {
                     <div className="lp-footer-brand">
                         <span className="lp-footer-logo">Student Organizer</span>
                         <p className="lp-footer-desc">
-                            Your all-in-one study companion. Organize notes, track progress, and stay focused — free forever.
+                            Tasks, notes, journal, timers, timetable, and a study vault.
                         </p>
-                        <span className="lp-footer-badge">
-                            <HiOutlineHeart size={14} /> Built for students, by students
-                        </span>
                     </div>
 
                     {Object.entries(FOOTER_LINKS).map(([col, items]) => (

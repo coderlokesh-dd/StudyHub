@@ -87,7 +87,7 @@ export default function Credits() {
                     <span className="credits-label">Made by</span>
                     <h1 className="credits-title">credits</h1>
                     <p className="credits-sub">
-                        Every pixel, line of code, and pastel color chosen by one student trying to ace it.
+                        Built by one student.
                     </p>
                 </motion.div>
 
@@ -135,7 +135,7 @@ export default function Credits() {
                     <p className="credits-quote">
                         Got tired of juggling six tabs every study session, so I built one.
                     </p>
-                    <span className="credits-quote-author">— Lokeshwaran, on why this exists</span>
+                    <span className="credits-quote-author">— Lokeshwaran</span>
                 </motion.section>
 
                 {/* interests */}
@@ -180,7 +180,7 @@ export default function Credits() {
                 <motion.section id="contact" className="credits-contact" variants={fadeUp} custom={6}>
                     <h3 className="credits-section-title" style={{ textAlign: 'center' }}>get in touch</h3>
                     <p className="credits-contact-sub">
-                        Open to feedback, collabs, or a quick hello.
+                        Feedback or questions welcome.
                     </p>
                     <div className="credits-contact-btns">
                         <a className="credits-btn credits-btn--github" href="https://github.com/coderlokesh-dd" target="_blank" rel="noreferrer">

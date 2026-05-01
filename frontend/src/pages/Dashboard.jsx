@@ -73,13 +73,12 @@ export default function Dashboard() {
                 tag={`DASHBOARD · ${dateStr}`} 
                 tagColor={PALETTE.mint}
                 title={greeting.text} 
-                subtitle={isPro ? 'Keep the momentum going.' : greeting.sub} 
+                subtitle={isPro ? "Today's overview." : greeting.sub}
             />
 
             {/* Hero row */}
             <motion.div className="comic-hero-grid" variants={itemVariants}>
                 <ComicCardPaper color={PALETTE.lavender} style={{ padding: 24, overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(11,11,15,0.1) 1px, transparent 1.5px)', backgroundSize: '10px 10px', pointerEvents: 'none' }} />
                     <div className="comic-mascot-hero" style={{ position: 'relative' }}>
                         <Mascot state="idle" size={120} />
                         <div style={{ flex: 1 }}>
@@ -199,7 +198,7 @@ export default function Dashboard() {
                         </div>
                     ) : (
                         <div style={{ textAlign: 'center', padding: '30px 0', color: 'rgba(245,245,250,0.5)', fontFamily: 'Bangers, cursive', fontSize: 20 }}>
-                            {isPro ? 'Nothing scheduled. Clean.' : 'no exams rn we free 🕊️'}
+                            {isPro ? 'Nothing scheduled.' : 'no exams rn we free 🕊️'}
                         </div>
                     )}
                 </ComicCardDark>

@@ -67,7 +67,7 @@ export default function Legal() {
                     <h2 className="credits-section-title">privacy policy</h2>
                     <p className="legal-p">
                         Student Organizer is a free productivity app for students. This page explains
-                        what data we collect and what we do with it. Spoiler: not much.
+                        what data we collect and what we do with it.
                     </p>
 
                     <h3 className="legal-h3">What we store</h3>
@@ -109,7 +109,7 @@ export default function Legal() {
                 <motion.section id="terms" className="credits-section" variants={fadeUp} custom={3}>
                     <h2 className="credits-section-title">terms of service</h2>
                     <p className="legal-p">
-                        By using Student Organizer, you agree to the following. They're short.
+                        By using Student Organizer, you agree to the following.
                     </p>
 
                     <h3 className="legal-h3">The deal</h3>
@@ -153,7 +153,7 @@ export default function Legal() {
                 </motion.section>
 
                 <motion.div className="credits-signoff" variants={fadeUp} custom={4}>
-                    <span>Questions? Hit the </span>
+                    <span>Questions? See the </span>
                     <Link to="/credits#contact" className="legal-link">contact section</Link>
                 </motion.div>
             </motion.div>

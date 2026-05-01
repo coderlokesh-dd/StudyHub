@@ -39,7 +39,6 @@
     border-radius: var(--radius-full);
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    backdrop-filter: blur(8px);
 }
 
 .search-wrap input:focus {

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlinePlus, HiOutlineTrash, HiOutlinePencil, HiOutlineLocationMarker, HiOutlineCog } from 'react-icons/hi';
 import * as api from '../utils/api';
-import { generateId } from '../utils/helpers';
 import Modal from '../components/Modal';
 import './Timetable.css';
 
@@ -88,12 +87,11 @@ export default function Timetable() {
     const handleSave = async () => {
         if (!form.title.trim() && !form.subject.trim()) return;
         if (editId) {
-            await api.updateTimetableEntry(editId, form);
-            setEntries(prev => prev.map(e => e.id === editId ? { ...e, ...form } : e));
+            const updated = await api.updateTimetableEntry(editId, form);
+            setEntries(prev => prev.map(e => e.id === editId ? updated : e));
         } else {
-            const entry = { id: generateId(), ...form };
-            await api.createTimetableEntry(entry);
-            setEntries(prev => [...prev, entry]);
+            const created = await api.createTimetableEntry(form);
+            setEntries(prev => [...prev, created]);
         }
         setModalOpen(false);
         setEditId(null);

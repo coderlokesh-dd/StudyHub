@@ -11,8 +11,12 @@
 
   /* Base */
   --bg-base: #0B0B0F;
-  --bg-elevated: rgba(18, 18, 26, 0.7);
-  --bg-card: rgba(24, 24, 34, 0.65);
+  --bg-elevated: #16161E;
+  --bg-card: #1E1E2A;
+  --bg-card-solid: #1E1E2A;
+  --bg-card-hover: #252533;
+  --bg-input: #14141C;
+  --border-subtle: rgba(245, 245, 250, 0.08);
   --border-comic: #0B0B0F;
   --ink: #0B0B0F;
   --paper: #FFF8EA;
@@ -86,8 +90,6 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background: var(--bg-primary);
-  background-image: radial-gradient(circle, rgba(11, 11, 15, 0.18) 1px, transparent 1.5px);
-  background-size: 8px 8px;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -115,7 +117,7 @@ input, textarea, select {
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--text-primary);
-  background: rgba(24, 24, 34, 0.8);
+  background: var(--bg-input);
   border: 2px solid var(--border-comic);
   border-radius: var(--radius-md);
   padding: 10px var(--space-md);
@@ -162,7 +164,6 @@ input:focus, textarea:focus, select:focus {
   padding: var(--space-lg);
   box-shadow: var(--comic-shadow);
   transition: all var(--transition-base);
-  backdrop-filter: blur(12px);
 }
 .card:hover { transform: translateY(-2px); box-shadow: 6px 6px 0 var(--ink); }
 
@@ -236,12 +237,12 @@ input:focus, textarea:focus, select:focus {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .comic-page-header-right {
     align-self: stretch;
   }
-  
-  .comic-page-header-right > button, 
+
+  .comic-page-header-right > button,
   .comic-page-header-right > div {
     width: 100%;
     justify-content: center;

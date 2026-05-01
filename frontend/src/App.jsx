@@ -11,6 +11,7 @@ import Landing from './pages/Landing';
 import Credits from './pages/Credits';
 import Legal from './pages/Legal';
 import Roadmap from './pages/Roadmap';
+import SharedNote from './pages/SharedNote';
 import Dashboard from './pages/Dashboard';
 import Notes from './pages/Notes';
 import Tasks from './pages/Tasks';
@@ -43,6 +44,7 @@ export default function App() {
                                 <Route path="/roadmap" element={<Roadmap />} />
                                 <Route path="/changelog" element={<Navigate to="/roadmap#changelog" replace />} />
                                 <Route path="/contact" element={<Navigate to="/credits#contact" replace />} />
+                                <Route path="/share/:token" element={<SharedNote />} />
 
                                 {/* Protected routes */}
                                 <Route element={

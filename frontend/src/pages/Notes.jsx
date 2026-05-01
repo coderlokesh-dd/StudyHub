@@ -168,7 +168,6 @@ export default function Notes() {
                 minHeight: 160
             }}
         >
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(11,11,15,0.08) 1px, transparent 1.5px)', backgroundSize: '10px 10px', pointerEvents: 'none', borderRadius: 10 }} />
             <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Chip color="#FFF8EA">{getCategoryLabel(note.category).toUpperCase()}</Chip>

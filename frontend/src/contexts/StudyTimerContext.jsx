@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { generateId } from '../utils/helpers';
 import { useApp } from './AppContext';
 
 const StudyTimerContext = createContext();
@@ -174,13 +173,11 @@ export function StudyTimerProvider({ children }) {
             const mins = Math.floor(elapsed / 60);
             if (mins > 0) logStudyTime(mins);
             addStudySession({
-                session_id: generateId(),
                 mode: session.mode,
                 duration: elapsed,
                 start_time: session.startTime,
                 end_time: new Date().toISOString(),
                 subject: session.subject || null,
-                created_at: new Date().toISOString(),
             });
         }
         setFullscreenWarning(false);

@@ -6,15 +6,13 @@
     width: var(--sidebar-width);
     height: 100vh;
     height: 100dvh;
-    background: rgba(18, 18, 26, 0.7);
+    background: var(--bg-elevated);
     border-right: 3px solid var(--border-comic);
     box-shadow: 4px 0 0 var(--border-comic);
     display: none;
     flex-direction: column;
     z-index: var(--z-nav);
     padding: var(--space-xl) 0;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     transition: width 0.3s ease;
 }
 

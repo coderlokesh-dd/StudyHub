@@ -20,43 +20,43 @@ const stagger = { visible: { transition: { staggerChildren: 0.07 } } };
 const UPCOMING = [
     {
         title: 'Flashcards with spaced repetition',
-        desc: 'Build study decks for any subject. Cards you ace get pushed back, while tricky ones come back sooner — so you spend revision time on what you actually need.',
+        desc: 'Decks for any subject. Cards you get right come back less often; ones you miss come back sooner.',
         status: 'in progress',
         tone: 'butter',
     },
     {
-        title: 'Tighter privacy on your data',
-        desc: "Making absolutely sure your tasks, notes, and journal entries stay locked to your account — visible only to you, no one else.",
+        title: 'Per-user data scoping',
+        desc: 'Tasks, notes, and journal entries scoped to each user account on the backend.',
         status: 'in progress',
         tone: 'lavender',
     },
     {
-        title: 'Reliable Study Vault storage',
-        desc: 'Permanent cloud storage for the files you upload. Your PDFs and images stay safe forever, even when the app updates.',
+        title: 'Persistent Study Vault storage',
+        desc: 'Permanent cloud storage for uploaded files.',
         status: 'planned',
         tone: 'mint',
     },
     {
-        title: 'Better Notes & Journal writing',
-        desc: 'Format your writing the way you want — bold the important bits, make checklists, embed images, and more. No more boring wall-of-text.',
+        title: 'Rich text in Notes & Journal',
+        desc: 'Bold, italic, checklists, and image embeds.',
         status: 'planned',
         tone: 'butter',
     },
     {
         title: 'Light theme + accent picker',
-        desc: 'A bright daytime theme plus your choice of accent color, so the app feels like yours.',
+        desc: 'Light theme and accent color picker.',
         status: 'planned',
         tone: 'coral',
     },
     {
-        title: 'Mobile polish pass',
-        desc: "Squashing the little bugs on phones so the app feels great whether you're studying at your desk or on the bus.",
+        title: 'Mobile fixes',
+        desc: 'Mobile layout fixes (off-screen modals, viewport edge cases).',
         status: 'planned',
         tone: 'sky',
     },
     {
-        title: 'Download your data',
-        desc: 'Export your tasks, journal entries, and study sessions as a simple file — handy for personal backups or comparing notes with study buddies.',
+        title: 'Data export',
+        desc: 'Export tasks, journal entries, and study sessions as a file.',
         status: 'idea',
         tone: 'lavender',
     },
@@ -85,11 +85,11 @@ const CHANGELOG = [
     {
         version: 'v1.0',
         date: 'March 2026',
-        title: 'Initial launch — Comic Edition',
+        title: 'Initial launch',
         items: [
             'First public launch — all core tools live (Tasks, Notes, Journal, Study Zone, Timetable, Exams, Progress, Vault)',
             'Email + password sign-up with personal profiles',
-            'The signature Comic Edition look — pastel palette and bold type',
+            'Pastel comic theme with bold type',
         ],
     },
 ];
@@ -132,7 +132,7 @@ export default function Roadmap() {
                     <span className="credits-label">What's next</span>
                     <h1 className="credits-title">roadmap</h1>
                     <p className="credits-sub">
-                        What's coming, what shipped, and the rough order of things.
+                        What's coming and what shipped.
                     </p>
                 </motion.div>
 
@@ -149,7 +149,7 @@ export default function Roadmap() {
                 <motion.section id="upcoming" className="credits-section" variants={fadeUp} custom={2}>
                     <h2 className="credits-section-title">upcoming</h2>
                     <p className="legal-p">
-                        Best-effort priority order. No promised dates — this is a student project.
+                        Rough priority order. No promised dates.
                     </p>
 
                     <div className="roadmap-list">
@@ -197,7 +197,7 @@ export default function Roadmap() {
 
                 <motion.div className="credits-signoff" variants={fadeUp} custom={4}>
                     <span>Have a feature idea? </span>
-                    <Link to="/credits#contact" className="legal-link">Drop a line</Link>
+                    <Link to="/credits#contact" className="legal-link">Email me</Link>
                 </motion.div>
             </motion.div>
         </div>

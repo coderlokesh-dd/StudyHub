@@ -1,19 +1,19 @@
 # Student Organizer — Standard Operating Procedure (SOP)
 
-> Last updated: 2026-04-26
+> Last updated: 2026-05-01
 > Purpose: fast reference for running, extending, and deploying the app so new work does not require re-exploring the codebase.
 
 ---
 
 ## 1. What this app is
 
-Full-stack React + Express web app bundling student productivity tools: Tasks (with subtasks), Notes, Journal, Study Zone (Deep Focus / Pomodoro / Casual timers), Timetable, Exam Countdown, Progress charts, Study Vault (file uploads), and Settings. Flashcards (Leitner spaced repetition) are scaffolded — backend + page file exist but the route is not wired and the feature is not yet shipped.
+React + Vite SPA bundling student productivity tools: Tasks (with subtasks), Notes (shareable), Journal, Study Zone (Deep Focus / Pomodoro / Casual timers), Timetable, Exam Countdown, Progress charts, Study Vault (file uploads), and Settings. Flashcards (Leitner spaced repetition) is scaffolded — the page exists but is not routed and not yet shipped.
 
 - **Auth**: Supabase (email + password)
-- **App data**: Express + PostgreSQL backend (`/api/*`)
+- **App data**: Supabase Postgres, RLS-scoped per user (`auth.uid() = user_id`)
 - **File storage**: Supabase Storage bucket `study-vault`
-- **Frontend deploy**: Netlify (auto-deploy from GitHub)
-- **Backend deploy**: Render (auto-deploy from GitHub)
+- **Frontend deploy**: Netlify (auto-deploy from GitHub `main`)
+- **Backend**: none — the frontend talks to Supabase directly via `@supabase/supabase-js`
 
 ---
 
@@ -22,78 +22,62 @@ Full-stack React + Express web app bundling student productivity tools: Tasks (w
 | Layer | Stack |
 |-------|-------|
 | Frontend | React 18, Vite 5, react-router-dom, framer-motion, recharts, @supabase/supabase-js |
-| Backend | Node.js, Express 5, `pg` (PostgreSQL client), Multer (uploads), CORS |
-| DB | PostgreSQL on Render (app data) + Supabase (auth + vault) |
-| Deploy | Netlify (frontend) + Render (backend + Postgres), both auto-deploy from GitHub `main` |
+| Data + Auth + Storage | Supabase (single project) |
+| Deploy | Netlify (auto-deploy from GitHub `main`) |
 
 ---
 
 ## 3. Prerequisites
 
 - Node.js 18+ and npm
-- PostgreSQL 14+ running locally (or a hosted DB URL)
 - A Supabase project (free tier is fine) with:
   - Auth enabled (email provider)
   - Storage bucket `study-vault` (private)
-  - Tables from `supabase-setup.sql` applied
+  - Tables + RLS policies from `supabase-setup.sql` applied
 
 ---
 
 ## 4. First-time setup
 
 ```bash
-# 1. Install backend deps
-cd backend
+# 1. Install frontend deps
+cd frontend
 npm install
 
-# 2. Install frontend deps
-cd ../frontend
-npm install
-
-# 3. Apply Supabase schema
+# 2. Apply Supabase schema
 #    Open Supabase Dashboard → SQL Editor → paste supabase-setup.sql → Run
 
-# 4. Create local Postgres database
-psql -U postgres -c "CREATE DATABASE student_organizer;"
-
-# 5. Create env files (see section 5)
+# 3. Create env file (see section 5)
 ```
 
-Tables on the Express side auto-create on first server boot (`backend/database/database.js`).
+Step 2 creates every app table (`notes`, `tasks`, `subtasks`, `journal`, `flashcard_decks`, `flashcards`, `exams`, `timetable_entries`, `study_sessions`, `study_log`, `user_data`) plus the vault tables and the `get_shared_note` RPC. RLS is on for everything.
 
 ---
 
 ## 5. Environment variables
 
-### `backend/.env`
-```env
-DATABASE_URL=postgres://postgres:<password>@localhost:5432/student_organizer
-PORT=5000
-ALLOWED_ORIGINS=http://localhost:5173,https://<your-frontend-domain>
-```
-
 ### `frontend/.env`
 ```env
 VITE_SUPABASE_URL=https://<your-project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
-VITE_API_URL=http://localhost:5000   # prod: set to Render backend URL in Netlify env
+```
+
+Optional dev-only auto-login (`frontend/.env.development.local`):
+```env
+VITE_DEV_AUTO_LOGIN=true
+VITE_DEV_EMAIL=<your-test-account>
+VITE_DEV_PASSWORD=<your-test-password>
 ```
 
 ---
 
 ## 6. Running locally
 
-Open two terminals:
-
 ```bash
-# Terminal 1 — backend (http://localhost:5000)
-cd backend && npm run dev
-
-# Terminal 2 — frontend (http://localhost:5173)
-cd frontend && npm run dev
+cd frontend && npm run dev   # http://localhost:5173
 ```
 
-The Vite dev server proxies `/api/*` to `http://localhost:5000` (see `frontend/vite.config.js`).
+That's it — no backend process. The frontend hits Supabase's hosted API directly.
 
 ---
 
@@ -101,52 +85,48 @@ The Vite dev server proxies `/api/*` to `http://localhost:5000` (see `frontend/v
 
 ```
 Student_organizer/
-├── backend/
-│   ├── server.js              # Express app, CORS, route mounting
-│   ├── database/database.js   # PG pool + table bootstrap
-│   ├── routes/
-│   │   ├── tasks.js, notes.js, journal.js
-│   │   ├── subtasks.js, flashcards.js, exams.js
-│   │   ├── timetable.js, studySessions.js, userData.js
-│   │   ├── semesters.js, subjects.js, materials.js
-│   │   └── studyvault.js      # hierarchical read
-│   └── uploads/               # Multer destination (local only)
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx            # Routes + providers
 │   │   ├── main.jsx
-│   │   ├── pages/             # Dashboard, Tasks, Notes, Flashcards, Timetable, StudyZone, etc.
+│   │   ├── pages/             # Dashboard, Tasks, Notes, Flashcards, Timetable, StudyZone, SharedNote, etc.
 │   │   ├── components/        # Sidebar, BottomNav, FloatingTimer, Layout, Modal, ProtectedRoute
 │   │   ├── contexts/          # AuthContext, AppContext, StudyTimerContext, ThemeContext
-│   │   ├── utils/api.js       # REST client for the Express backend
+│   │   ├── utils/api.js       # Supabase client wrappers (CRUD per resource)
 │   │   └── lib/supabase.js    # Supabase client
 │   ├── vite.config.js
 │   └── netlify.toml
-├── supabase-setup.sql         # Auth-aware tables + RLS + storage bucket
-├── vercel.json                # SPA rewrite + build config
+├── supabase-setup.sql         # Tables + RLS + storage bucket + share RPC
 └── SOP.md                     # this file
 ```
 
 ---
 
-## 8. Database schema (local Postgres)
+## 8. Database schema (Supabase Postgres)
+
+Every table has `user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL` plus 4 RLS policies (`select` / `insert` / `update` / `delete`) gating on `auth.uid() = user_id`. Inserts must include `user_id` from the JWT; updates and deletes auto-scope via RLS.
 
 | Table | Key columns |
 |-------|-------------|
+| `profiles` | `id` (= `auth.users.id`), first_name, last_name, username, email, dob, school_type, school_name, address, phone |
+| `notes` | title, content, category, favorite, share_token (UNIQUE) |
 | `tasks` | title, subject, priority, due_date, completed, completed_at |
-| `subtasks` | task_id (FK), title, completed |
-| `notes` | title, content, category, favorite |
-| `journal` | date (UNIQUE), title, content, mood |
-| `flashcard_decks` | title, subject (table exists — feature not yet shipped) |
-| `flashcards` | deck_id, front, back, box (1–5), next_review (table exists — feature not yet shipped) |
+| `subtasks` | task_id (FK→tasks ON DELETE CASCADE), title, completed |
+| `journal` | date, title, content, mood — UNIQUE (user_id, date) |
+| `flashcard_decks` | title, subject |
+| `flashcards` | deck_id (FK→flashcard_decks ON DELETE CASCADE), front, back, box (1–5), next_review |
 | `exams` | title, subject, exam_date, color |
 | `timetable_entries` | title, subject, day_of_week (0–6), start_time, end_time, color, location |
-| `study_sessions` | mode, duration, start_time, end_time, subject |
-| `study_log` | date (UNIQUE), minutes |
-| `user_data` | key (PK), value (JSONB) — streaks, badges, totalStudyMinutes |
-| `semesters`, `subjects`, `materials` | legacy local vault (now handled via Supabase) |
+| `study_sessions` | session_id (PK), mode, duration, start_time, end_time, subject |
+| `study_log` | date, minutes — UNIQUE (user_id, date) |
+| `user_data` | (user_id, key) composite PK, value (JSONB) — streak, badges, totalStudyMinutes |
+| `vault_semesters` | title |
+| `vault_subjects` | semester_id (FK→vault_semesters ON DELETE CASCADE), title |
+| `vault_materials` | subject_id (FK→vault_subjects ON DELETE CASCADE), file_name, file_url, file_type, file_size, storage_path |
 
-Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vault_subjects`, `vault_materials`.
+**Public RPC**: `get_shared_note(token TEXT)` — `SECURITY DEFINER` Postgres function callable from the anon role via `supabase.rpc('get_shared_note', { token })`. Returns the note matching `share_token`. Bypasses RLS only for that single lookup; nothing else is exposed to anon.
+
+**Storage bucket** `study-vault` (private): RLS policies require the path prefix `<auth.uid()>/...`. See section 5 of `supabase-setup.sql`.
 
 ---
 
@@ -155,7 +135,7 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 | Path | Type | Renders |
 |------|------|---------|
 | `/` | Public | Landing page. If a Supabase session exists, redirects to `/dashboard` |
-| `/landing` | Public | Redirects to `/` (kept as alias for old links / bookmarks) |
+| `/landing` | Public | Redirects to `/` (alias for old links / bookmarks) |
 | `/credits` | Public | Credits page (creator profile, interests, tech stack, contact) |
 | `/legal` | Public | Privacy + Terms (anchors `#privacy` and `#terms`) |
 | `/roadmap` | Public | Upcoming + Changelog (anchors `#upcoming` and `#changelog`) |
@@ -163,6 +143,7 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 | `/terms` | Public | Redirects → `/legal#terms` |
 | `/changelog` | Public | Redirects → `/roadmap#changelog` |
 | `/contact` | Public | Redirects → `/credits#contact` |
+| `/share/:token` | Public | Read-only shared note + .txt download (uses `get_shared_note` RPC) |
 | `/dashboard` | Protected | Dashboard (streak, tasks, exams, badges) |
 | `/notes` | Protected | Notes |
 | `/tasks` | Protected | Tasks |
@@ -177,9 +158,9 @@ Supabase-side tables (auth-scoped, RLS on): `profiles`, `vault_semesters`, `vaul
 
 Auth gate (`frontend/src/components/ProtectedRoute.jsx`): unauthenticated users hitting any protected route are redirected to `/`. Landing.jsx handles the inverse — if a session is found, it pushes the user to `/dashboard`.
 
-**Scaffolded but not routed**: `frontend/src/pages/Flashcards.jsx` + `Flashcards.css` exist on disk and `backend/routes/flashcards.js` is wired in `server.js`, but the page is not registered in `App.jsx` and not linked from Sidebar/BottomNav. To ship: add the route, add the nav entries, then move the upcoming roadmap item to the changelog.
+**Scaffolded but not routed**: `frontend/src/pages/Flashcards.jsx` + `Flashcards.css` exist on disk; the page is not registered in `App.jsx` and not linked from Sidebar/BottomNav. To ship: add the route, add the nav entries, then move the upcoming roadmap item to the changelog.
 
-Dev-only auto-login (`AuthContext.jsx`) reads `VITE_DEV_AUTO_LOGIN` from `frontend/.env.development.local`. Set to `true` to skip the form on `npm run dev`; set to `false` to land on `/` (the landing page) like a fresh visitor would.
+Dev-only auto-login (`AuthContext.jsx`) reads `VITE_DEV_AUTO_LOGIN` from `frontend/.env.development.local`. Set to `true` to skip the form on `npm run dev`; set to `false` to land on `/` like a fresh visitor would.
 
 ---
 
@@ -187,21 +168,30 @@ Dev-only auto-login (`AuthContext.jsx`) reads `VITE_DEV_AUTO_LOGIN` from `fronte
 
 ### Add a new feature with its own resource
 
-1. **Backend**
-   - Add table in `backend/database/database.js` (CREATE TABLE IF NOT EXISTS)
-   - Create `backend/routes/<resource>.js` following the pattern in `tasks.js`
-   - Register it in `backend/server.js`: `app.use('/api/<resource>', require('./routes/<resource>'))`
+1. **Database (Supabase SQL Editor)** — append to `supabase-setup.sql` and run only the new block:
+   ```sql
+   CREATE TABLE IF NOT EXISTS <name> (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+     -- table-specific columns
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ALTER TABLE <name> ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "<name>_select_own" ON <name> FOR SELECT USING (auth.uid() = user_id);
+   CREATE POLICY "<name>_insert_own" ON <name> FOR INSERT WITH CHECK (auth.uid() = user_id);
+   CREATE POLICY "<name>_update_own" ON <name> FOR UPDATE USING (auth.uid() = user_id);
+   CREATE POLICY "<name>_delete_own" ON <name> FOR DELETE USING (auth.uid() = user_id);
+   ```
 2. **Frontend**
-   - Add API functions in `frontend/src/utils/api.js`
-   - Add state + CRUD functions in `frontend/src/contexts/AppContext.jsx`
-   - Create page in `frontend/src/pages/<Feature>.jsx` + sibling `.css`
-   - Register route in `frontend/src/App.jsx` inside the `<ProtectedRoute><Layout /></ProtectedRoute>` block (anything outside is public, like `/`)
-   - Add nav entry in `frontend/src/components/Sidebar.jsx` (and `BottomNav.jsx` if present) — use the route path you registered, e.g. `/my-feature`
+   - Add Supabase wrappers in `frontend/src/utils/api.js`. Every `insert` must include `user_id: await uid()`; updates/deletes rely on RLS.
+   - Add state + CRUD functions in `frontend/src/contexts/AppContext.jsx`. Consume the row returned by `.select().single()` (don't pre-generate IDs — Postgres assigns UUIDs).
+   - Create page in `frontend/src/pages/<Feature>.jsx` + sibling `.css`.
+   - Register route in `frontend/src/App.jsx` inside the `<ProtectedRoute><Layout /></ProtectedRoute>` block.
+   - Add nav entry in `frontend/src/components/Sidebar.jsx` and `BottomNav.jsx`.
 
 ### Add a field to an existing table
-- Add `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` block to `backend/database/database.js`
-- Update the route's INSERT/UPDATE handler
-- Update the `api.js` payload + the form / modal that writes it
+- Run `ALTER TABLE <name> ADD COLUMN IF NOT EXISTS <col> <type>;` in the Supabase SQL Editor.
+- Update the `api.js` payload + the form / modal that writes it.
 
 ### Change the theme / accent
 Handled at runtime by `ThemeContext`; persisted to localStorage. No code change needed — use Settings page.
@@ -210,7 +200,7 @@ Handled at runtime by `ThemeContext`; persisted to localStorage. No code change 
 
 ## 11. Deployment
 
-Both services auto-deploy from the GitHub repo on every push to `main`. To ship a change: commit → push → both Netlify and Render pick it up.
+Frontend auto-deploys to Netlify on every push to `main`.
 
 ```bash
 git add .
@@ -224,28 +214,13 @@ git push origin main
 - **Env vars** (Netlify → Site settings → Environment variables):
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
-  - `VITE_API_URL` — set to the Render backend URL (e.g. `https://student-organizer-api.onrender.com`)
 - SPA fallback: all routes rewrite to `/index.html` (handled by `netlify.toml`)
 - `vercel.json` is present but not used — safe to leave or delete
-
-### Backend → Render
-- Render service (Web Service) is connected to the GitHub repo
-- **Build command**: `cd backend && npm install`
-- **Start command**: `cd backend && npm start`
-- **Env vars** (Render → Environment):
-  - `DATABASE_URL` — Render Postgres internal URL
-  - `PORT` — Render injects this; Express reads `process.env.PORT`
-  - `ALLOWED_ORIGINS` — Netlify URL (e.g. `https://<site>.netlify.app`), comma-separated if multiple
-- **Database**: Render Postgres add-on. Tables bootstrap automatically on first boot via `backend/database/database.js`
-- **Free tier caveat**: Render free web services sleep after 15 min idle — first request after sleep takes ~30s to wake
-- **Uploads caveat**: Render's filesystem is **ephemeral** — files written to `backend/uploads/` disappear on redeploy. Migrate Multer uploads to Supabase Storage before relying on persistence
 
 ### Deploy checklist
 1. Push to `main`
 2. Watch Netlify build log (Deploys tab) — confirm green
-3. Watch Render build + deploy log — confirm "Live" status
-4. Open the Netlify URL, log in, verify API calls hit the Render backend (Network tab)
-5. If CORS errors: add the Netlify URL to Render's `ALLOWED_ORIGINS` env var and redeploy
+3. Open the Netlify URL, sign in, smoke-test core pages
 
 ---
 
@@ -253,33 +228,27 @@ git push origin main
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| `CORS error` in browser | Backend `ALLOWED_ORIGINS` missing frontend URL | Add Netlify URL to Render env var `ALLOWED_ORIGINS`, redeploy |
-| First API call takes ~30s | Render free tier cold start | Expected; upgrade Render plan to keep warm, or hit a warm-up endpoint on app load |
-| Deploy didn't trigger on push | Branch mismatch or service paused | Check Netlify/Render settings — service connected to correct GitHub repo + `main` branch |
+| Pages render but data is empty | Not signed in, or RLS not seeing JWT | Confirm Supabase session exists; check Network tab — Supabase requests should carry `Authorization: Bearer …` |
 | 401 on Supabase calls | Anon key missing / wrong project | Re-copy from Supabase Settings → API |
-| Tables missing on backend | DB connection failed before bootstrap | Check `DATABASE_URL`, that Postgres is running |
-| File upload 413 / fails in prod | Backend `uploads/` not persisted on PaaS | Switch upload to Supabase Storage |
+| Insert fails with `row-level security` error | `user_id` missing from payload or doesn't match `auth.uid()` | Check `api.js` — every insert must include `user_id: await uid()` |
+| Storage upload fails with permission error | Object path missing `<user_id>/` prefix | Storage RLS uses `split_part(name, '/', 1) = auth.uid()::text`; build the path as `${user.id}/${file.name}` |
 | Timer stops on refresh | Expected — `StudyTimerContext` is in-memory | Save session before reload |
-| Auth works but data is blank | Express API has no per-user scoping | Known gap; see section 12 |
+| Supabase project paused | Free tier auto-pauses after ~1 week of inactivity | Open the Supabase dashboard and click "Restore project" |
 
 ---
 
 ## 13. Known gaps / future work
 
-- **Per-user scoping on Express**: routes do not filter by `user_id`. All authenticated users see the same data. Fix: add `user_id UUID` to each table, pass Supabase JWT from frontend, verify on backend, and filter queries.
-- **Uploads dir is local-only**: migrate Multer handlers to Supabase Storage for durability across deploys.
-- **Legacy `backend/database.sqlite`**: unused; safe to delete once confirmed not referenced.
 - **Mobile polish**: BottomNav exists but some modals render off-screen on small viewports.
+- **Flashcards not routed**: `pages/Flashcards.jsx` is scaffolded but not linked from `App.jsx` / nav.
+
+Closed by the 2026-05-01 migration: per-user scoping (now enforced by RLS), Render Postgres 30-day expiry, ephemeral Multer uploads, legacy local Postgres + sqlite.
 
 ---
 
 ## 14. Useful commands
 
 ```bash
-# Backend
-cd backend && npm run dev          # start with nodemon
-cd backend && npm start            # plain node
-
 # Frontend
 cd frontend && npm run dev         # Vite dev server
 cd frontend && npm run build       # production build → dist/
@@ -296,5 +265,4 @@ git log --oneline -10
 
 - Supabase dashboard: https://app.supabase.com
 - Netlify dashboard: https://app.netlify.com
-- Render dashboard: https://dashboard.render.com
-- GitHub repo: source of truth — pushes to `main` trigger both deploys
+- GitHub repo: source of truth — pushes to `main` trigger Netlify deploy

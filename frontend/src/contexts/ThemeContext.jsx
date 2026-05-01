@@ -36,9 +36,6 @@ export function ThemeProvider({ children }) {
             root.style.setProperty('--accent-rgb', rgbStr);
             root.style.setProperty('--accent-bg', `rgba(${rgbStr}, 0.08)`);
             root.style.setProperty('--accent-bg-hover', `rgba(${rgbStr}, 0.14)`);
-            root.style.setProperty('--gradient-accent', `linear-gradient(135deg, ${accent}, rgba(${rgbStr}, 0.6))`);
-            root.style.setProperty('--accent-glow', `0 0 20px rgba(${rgbStr}, 0.3)`);
-            root.style.setProperty('--accent-glow-lg', `0 0 40px rgba(${rgbStr}, 0.2), 0 0 80px rgba(${rgbStr}, 0.1)`);
         } else {
             // Remove custom inline styles to let index.css take over
             root.style.removeProperty('--accent');
@@ -46,9 +43,6 @@ export function ThemeProvider({ children }) {
             root.style.removeProperty('--accent-rgb');
             root.style.removeProperty('--accent-bg');
             root.style.removeProperty('--accent-bg-hover');
-            root.style.removeProperty('--gradient-accent');
-            root.style.removeProperty('--accent-glow');
-            root.style.removeProperty('--accent-glow-lg');
             root.setAttribute('data-accent', accent);
         }
 

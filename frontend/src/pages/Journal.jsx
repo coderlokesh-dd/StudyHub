@@ -108,7 +108,7 @@ export default function Journal() {
                 />
                 <div className="journal-future-block">
                     <div className="future-icon">🔮</div>
-                    <h2>{isPro ? 'The future awaits!' : 'future vibes only!'}</h2>
+                    <h2>{isPro ? 'Future date' : 'future vibes only!'}</h2>
                     <p className="future-date">{formattedDate}</p>
                     <p>{isPro ? 'Journal entries cannot be created for future dates. Come back on this day to write your entry.' : 'cant write in the future yet. wait for this day to spill!'}</p>
                 </div>

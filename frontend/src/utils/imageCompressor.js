@@ -83,7 +83,7 @@ const ALLOWED_TYPES = [
     'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 ];
 
-export function validateFile(file, maxSizeMB = 10) {
+export function validateFile(file, maxSizeMB = 50) {
     if (!ALLOWED_TYPES.includes(file.type)) {
         return { valid: false, error: `Invalid file type: ${file.type || 'Unknown'}. Only PDF, JPG, PNG, WebP, Word, and PPT are allowed.` };
     }

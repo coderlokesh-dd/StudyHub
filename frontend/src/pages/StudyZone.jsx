@@ -60,7 +60,7 @@ function ModeSelect({ onSelect, isActive }) {
                             background="transparent"
                             borderRadius="var(--radius-2xl)"
                             borderColor="transparent"
-                            glareColor="#3B82F6"
+                            glareColor="var(--accent)"
                             glareOpacity={0.4}
                             glareAngle={-30}
                             glareSize={300}
@@ -119,8 +119,8 @@ function ModeSelect({ onSelect, isActive }) {
                                     sentence="Deep Study"
                                     manualMode={false}
                                     blurAmount={4}
-                                    borderColor="#A855F7"
-                                    glowColor="rgba(168, 85, 247, 0.6)"
+                                    borderColor="var(--accent)"
+                                    glowColor="rgba(var(--accent-rgb), 0.6)"
                                     animationDuration={0.5}
                                     pauseBetweenAnimations={1}
                                     active={deepHovered}

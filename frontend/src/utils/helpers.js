@@ -30,10 +30,6 @@ export function timeAgo(dateStr) {
     return formatDate(dateStr);
 }
 
-export function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
-}
-
 const KNOWN_CATEGORIES = {
     math: 'Math', science: 'Science', english: 'English',
     history: 'History', cs: 'Computer Science', general: 'General',

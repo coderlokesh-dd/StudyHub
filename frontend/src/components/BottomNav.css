@@ -5,9 +5,7 @@
     left: 16px;
     right: 16px;
     height: 72px;
-    background: rgba(18, 18, 26, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--bg-elevated);
     border: 3px solid var(--border-comic);
     box-shadow: 4px 4px 0 var(--border-comic);
     border-radius: 20px;
@@ -77,8 +75,6 @@
     inset: 0;
     z-index: calc(var(--z-nav) + 5);
     background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: flex-end;
     justify-content: center;
