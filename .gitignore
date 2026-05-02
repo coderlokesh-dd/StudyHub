@@ -10,3 +10,6 @@ uploads/
 .claude/
 *.log
 /package-lock.json
+
+# Auto-generated conversation files
+*.txt

@@ -551,7 +551,7 @@ export default function StudyVault() {
                             <>
                                 <HiOutlineUpload size={28} />
                                 <span>Drop files here or click to upload</span>
-                                <span className="vault-dropzone-hint">PDF, DOCX, PPTX, JPG, PNG (max 10 MB)</span>
+                                <span className="vault-dropzone-hint">PDF, DOCX, PPTX, JPG, PNG (max 50 MB)</span>
                             </>
                         )}
                     </div>
