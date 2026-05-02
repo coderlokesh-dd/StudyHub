@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash, HiOutlineLogout, HiOutlineHeart } from 'react-icons/hi';
+import { HiOutlineMoon, HiOutlineSun, HiOutlineTrash, HiOutlineLogout, HiOutlineHeart, HiOutlineUserCircle, HiOutlineMail } from 'react-icons/hi';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
+import Modal from '../components/Modal';
 import './Settings.css';
 
 const containerVariants = {
@@ -25,17 +27,62 @@ const accentNames = {
 export default function Settings() {
     const { theme, toggleTheme, accent, setAccent, fontSize, setFontSize, tone, setTone, ACCENT_COLORS, FONT_SIZES } = useTheme();
     const { resetAllData } = useApp();
-    const { signOut } = useAuth();
+    const { signOut, user, profile } = useAuth();
 
-    const handleReset = () => {
-        if (window.confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-            resetAllData();
-        }
+    // confirm: null | { title, message, confirmLabel, onConfirm }
+    const [confirm, setConfirm] = useState(null);
+
+    const username = profile?.username
+        || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
+        || user?.user_metadata?.username
+        || '—';
+    const email = profile?.email || user?.email || '—';
+
+    const askSignOut = () => setConfirm({
+        title: 'Sign out?',
+        message: 'You\'ll need to log in again to access your notes, tasks, and study vault on this device.',
+        confirmLabel: 'Sign Out',
+        onConfirm: signOut,
+    });
+
+    const askReset = () => setConfirm({
+        title: 'Erase all data?',
+        message: 'This will clear all your notes, tasks, journal entries, and study progress on this device. This action cannot be undone.',
+        confirmLabel: 'Erase Data',
+        onConfirm: resetAllData,
+    });
+
+    const runConfirm = async () => {
+        const fn = confirm?.onConfirm;
+        setConfirm(null);
+        if (fn) await fn();
     };
 
     return (
         <motion.div className="page container" variants={containerVariants} initial="initial" animate="animate">
             <motion.h1 variants={itemVariants} style={{ marginBottom: 'var(--space-lg)' }}>⚙️ Settings</motion.h1>
+
+            {/* Account Info */}
+            <motion.section className="settings-section card" variants={itemVariants}>
+                <h3 className="settings-section-title">Account</h3>
+                <div className="settings-account">
+                    <div className="settings-account-avatar" aria-hidden="true">
+                        {(username && username !== '—' ? username : email).charAt(0).toUpperCase()}
+                    </div>
+                    <div className="settings-account-info">
+                        <div className="settings-account-row">
+                            <HiOutlineUserCircle size={16} />
+                            <span className="settings-account-label">Username</span>
+                            <span className="settings-account-value">{username}</span>
+                        </div>
+                        <div className="settings-account-row">
+                            <HiOutlineMail size={16} />
+                            <span className="settings-account-label">Email</span>
+                            <span className="settings-account-value">{email}</span>
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
 
             {/* Theme Toggle */}
             <motion.section className="settings-section card" variants={itemVariants}>
@@ -163,7 +210,7 @@ export default function Settings() {
             <motion.section className="settings-section card" variants={itemVariants}>
                 <h3 className="settings-section-title">Account & Data</h3>
                 
-                <div className="setting-row" onClick={signOut} id="signout-btn" style={{ marginBottom: 'var(--space-md)' }}>
+                <div className="setting-row" onClick={askSignOut} id="signout-btn" style={{ marginBottom: 'var(--space-md)' }}>
                     <div className="setting-info">
                         <HiOutlineLogout size={20} style={{ color: '#ef4444' }} />
                         <div>
@@ -176,7 +223,7 @@ export default function Settings() {
 
                 <div className="setting-divider" style={{ margin: 'var(--space-md) 0', height: '1px', background: 'var(--border-subtle)' }} />
 
-                <div className="setting-row" onClick={handleReset} id="reset-data-btn">
+                <div className="setting-row" onClick={askReset} id="reset-data-btn">
                     <div className="setting-info">
                         <HiOutlineTrash size={20} />
                         <div>
@@ -187,6 +234,25 @@ export default function Settings() {
                     <span className="reset-arrow">→</span>
                 </div>
             </motion.section>
+
+            {/* Confirm Dialog */}
+            <Modal
+                isOpen={!!confirm}
+                onClose={() => setConfirm(null)}
+                title={confirm?.title || ''}
+            >
+                <p className="settings-confirm-message">{confirm?.message}</p>
+                <div className="form-actions">
+                    <button className="btn btn-ghost" onClick={() => setConfirm(null)}>Cancel</button>
+                    <motion.button
+                        className="btn btn-danger"
+                        onClick={runConfirm}
+                        whileHover={{ scale: 1.03 }}
+                    >
+                        {confirm?.confirmLabel}
+                    </motion.button>
+                </div>
+            </Modal>
 
             {/* App Info */}
             <motion.div className="settings-footer" variants={itemVariants}>

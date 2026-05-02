@@ -1,4 +1,105 @@
 /* ===== SETTINGS PAGE — PREMIUM ===== */
+
+/* Account info */
+.settings-account {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+}
+
+.settings-account-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent, #7c5cff);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(124, 92, 255, 0.25);
+}
+
+.settings-account-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.settings-account-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    min-width: 0;
+}
+
+.settings-account-label {
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+.settings-account-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+}
+
+/* Confirm dialog message + danger button */
+.settings-confirm-message {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    margin: 0 0 var(--space-lg);
+}
+
+.btn.btn-danger {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: var(--comic-shadow);
+}
+
+.btn.btn-danger:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 var(--ink);
+}
+
+.btn.btn-danger:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
+@media (max-width: 480px) {
+    .settings-account {
+        gap: var(--space-md);
+    }
+
+    .settings-account-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .settings-account-row {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+}
+
 .settings-section {
     margin-bottom: var(--space-lg);
     background: var(--bg-card);
