@@ -172,28 +172,47 @@
     color: var(--text-tertiary, rgba(255, 255, 255, 0.35));
 }
 
-.vault-card-delete {
+.vault-card-actions {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
+    display: flex;
+    gap: 0.15rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.vault-folder-card:hover .vault-card-actions,
+.vault-card-actions:focus-within {
+    opacity: 1;
+}
+
+.vault-card-action {
     background: none;
     border: none;
     color: var(--text-tertiary, rgba(255, 255, 255, 0.25));
     cursor: pointer;
     padding: 0.3rem;
     border-radius: 6px;
-    opacity: 0;
-    transition: opacity 0.2s, color 0.2s, background 0.2s;
+    transition: color 0.2s, background 0.2s;
     display: flex;
 }
 
-.vault-folder-card:hover .vault-card-delete {
-    opacity: 1;
+.vault-card-action:hover {
+    color: var(--text-primary, #fff);
+    background: rgba(255, 255, 255, 0.08);
 }
 
-.vault-card-delete:hover {
+.vault-card-action-delete:hover {
     color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
+}
+
+/* Touch devices: always show actions since hover doesn't fire */
+@media (hover: none) {
+    .vault-card-actions {
+        opacity: 1;
+    }
 }
 
 /* Add card */

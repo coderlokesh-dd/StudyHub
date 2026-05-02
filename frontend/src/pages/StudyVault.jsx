@@ -5,7 +5,7 @@ import {
     HiOutlinePhotograph, HiOutlineUpload, HiOutlineTrash, HiOutlinePlus,
     HiOutlineChevronRight, HiOutlineDownload, HiOutlineX, HiOutlineEye,
     HiOutlineArrowLeft, HiOutlineSearch, HiOutlineDatabase, HiOutlineArrowsExpand,
-    HiOutlineShare,
+    HiOutlineShare, HiOutlinePencil,
 } from 'react-icons/hi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,6 +49,10 @@ export default function StudyVault() {
     const [newTitle, setNewTitle] = useState('');
     const [previewFile, setPreviewFile] = useState(null);
     const [isFullScreen, setIsFullScreen] = useState(false);
+
+    // Rename: { type: 'semester' | 'subject', id, title } | null
+    const [renameTarget, setRenameTarget] = useState(null);
+    const [renameTitle, setRenameTitle] = useState('');
 
     // Upload
     const [uploading, setUploading] = useState(false);
@@ -200,6 +204,40 @@ export default function StudyVault() {
         setSubjects((prev) => prev.filter((s) => s.id !== id));
         setMaterials((prev) => prev.filter((m) => m.subject_id !== id));
         if (currentSubject?.id === id) setCurrentSubject(null);
+    };
+
+    // --- RENAME (semester or subject) ---
+    const openRename = (type, item) => {
+        setRenameTarget({ type, id: item.id, title: item.title });
+        setRenameTitle(item.title);
+    };
+
+    const handleRename = async () => {
+        if (!renameTarget) return;
+        const title = renameTitle.trim();
+        if (!title || title === renameTarget.title) {
+            setRenameTarget(null);
+            return;
+        }
+        const table = renameTarget.type === 'semester' ? 'vault_semesters' : 'vault_subjects';
+        const { error: err } = await supabase
+            .from(table)
+            .update({ title })
+            .eq('id', renameTarget.id);
+        if (err) { setError(err.message); return; }
+
+        if (renameTarget.type === 'semester') {
+            setSemesters((prev) => prev.map((s) => s.id === renameTarget.id ? { ...s, title } : s));
+            if (currentSemester?.id === renameTarget.id) {
+                setCurrentSemester((prev) => prev ? { ...prev, title } : prev);
+            }
+        } else {
+            setSubjects((prev) => prev.map((s) => s.id === renameTarget.id ? { ...s, title } : s));
+            if (currentSubject?.id === renameTarget.id) {
+                setCurrentSubject((prev) => prev ? { ...prev, title } : prev);
+            }
+        }
+        setRenameTarget(null);
     };
 
     // --- FILE UPLOAD ---
@@ -383,13 +421,22 @@ export default function StudyVault() {
                             <span className="vault-folder-meta">
                                 {subjects.filter((s) => s.semester_id === sem.id).length} subjects
                             </span>
-                            <button
-                                className="vault-card-delete"
-                                onClick={(e) => { e.stopPropagation(); handleDeleteSemester(sem.id); }}
-                                title="Delete semester"
-                            >
-                                <HiOutlineTrash size={14} />
-                            </button>
+                            <div className="vault-card-actions">
+                                <button
+                                    className="vault-card-action"
+                                    onClick={(e) => { e.stopPropagation(); openRename('semester', sem); }}
+                                    title="Rename semester"
+                                >
+                                    <HiOutlinePencil size={14} />
+                                </button>
+                                <button
+                                    className="vault-card-action vault-card-action-delete"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteSemester(sem.id); }}
+                                    title="Delete semester"
+                                >
+                                    <HiOutlineTrash size={14} />
+                                </button>
+                            </div>
                         </motion.div>
                     ))}
 
@@ -430,13 +477,22 @@ export default function StudyVault() {
                                 <span className="vault-folder-meta">
                                     {materials.filter((m) => m.subject_id === sub.id).length} files
                                 </span>
-                                <button
-                                    className="vault-card-delete"
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteSubject(sub.id); }}
-                                    title="Delete subject"
-                                >
-                                    <HiOutlineTrash size={14} />
-                                </button>
+                                <div className="vault-card-actions">
+                                    <button
+                                        className="vault-card-action"
+                                        onClick={(e) => { e.stopPropagation(); openRename('subject', sub); }}
+                                        title="Rename subject"
+                                    >
+                                        <HiOutlinePencil size={14} />
+                                    </button>
+                                    <button
+                                        className="vault-card-action vault-card-action-delete"
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteSubject(sub.id); }}
+                                        title="Delete subject"
+                                    >
+                                        <HiOutlineTrash size={14} />
+                                    </button>
+                                </div>
                             </motion.div>
                         ))}
 
@@ -587,6 +643,29 @@ export default function StudyVault() {
                     <button className="btn btn-ghost" onClick={() => setAddSubjectOpen(false)}>Cancel</button>
                     <motion.button className="btn btn-primary" onClick={handleAddSubject} whileHover={{ scale: 1.03 }}>
                         Create
+                    </motion.button>
+                </div>
+            </Modal>
+
+            {/* ========== RENAME MODAL ========== */}
+            <Modal
+                isOpen={!!renameTarget}
+                onClose={() => setRenameTarget(null)}
+                title={renameTarget?.type === 'semester' ? 'Rename Semester' : 'Rename Subject'}
+            >
+                <div className="form-group">
+                    <label>{renameTarget?.type === 'semester' ? 'Semester Name' : 'Subject Name'}</label>
+                    <input
+                        value={renameTitle}
+                        onChange={(e) => setRenameTitle(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                        autoFocus
+                    />
+                </div>
+                <div className="form-actions">
+                    <button className="btn btn-ghost" onClick={() => setRenameTarget(null)}>Cancel</button>
+                    <motion.button className="btn btn-primary" onClick={handleRename} whileHover={{ scale: 1.03 }}>
+                        Save
                     </motion.button>
                 </div>
             </Modal>
